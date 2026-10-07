@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,20 +33,39 @@ private val Gold = Color(0xFFB5965A)
 private val Sage = Color(0xFF75846B)
 private val Mist = Color(0xFFE8E1D3)
 
-data class Lesson(val title: String, val jp: String, val subtitle: String, val xp: Int)
+data class Lesson(val title:String,val jp:String,val reading:String,val meaning:String,val subtitle:String,val xp:Int,val question:String,val choices:List<String>,val answer:Int)
 private val lessons = listOf(
-    Lesson("Приветствия","こんにちは","Поздороваться и представиться",25),
-    Lesson("Спасибо","ありがとう","Благодарность и вежливость",30),
-    Lesson("Знакомство","はじめまして","Имя и первый разговор",35),
-    Lesson("Числа","いち・に・さん","Считаем от 1 до 10",30),
-    Lesson("Время","いま なんじ？","Часы и повседневный ритм",35),
-    Lesson("Еда","おいしい！","Кафе, меню и заказ",40),
-    Lesson("Город","ここは どこ？","Ориентируемся в Японии",40),
-    Lesson("Семья","かぞく","Рассказываем о семье",35),
-    Lesson("Хобби","すきです","Что тебе нравится",45),
-    Lesson("Грамматика","です・ます","База N5",50),
-    Lesson("Диалог","きっさてん","Кафе в Киото",55),
-    Lesson("N5 Boss","JLPT N5","Финальная проверка",100)
+Lesson("Приветствия","こんにちは","konnichiwa","здравствуйте / добрый день","Базовые приветствия",25,"Что значит こんにちは?",listOf("Спасибо","Здравствуйте","До свидания","Извините"),1),
+Lesson("До встречи","さようなら","sayounara","до свидания","Прощаемся вежливо",25,"Что значит さようなら?",listOf("Доброе утро","До свидания","Пожалуйста","Добрый вечер"),1),
+Lesson("Доброе утро","おはようございます","ohayou gozaimasu","доброе утро","Утреннее приветствие",25,"Выбери «доброе утро».",listOf("こんばんは","おはようございます","ありがとう","すみません"),1),
+Lesson("Добрый вечер","こんばんは","konbanwa","добрый вечер","Приветствие вечером",25,"Как сказать «добрый вечер»?",listOf("こんばんは","こんにちは","おやすみなさい","はじめまして"),0),
+Lesson("Спасибо","ありがとう","arigatou","спасибо","Благодарность",30,"Что значит ありがとう?",listOf("Спасибо","Привет","Пока","Извините"),0),
+Lesson("Очень вежливо","ありがとうございます","arigatou gozaimasu","большое спасибо","Вежливая благодарность",30,"Как сказать «большое спасибо» вежливо?",listOf("すみません","ありがとう","ありがとうございます","どうぞ"),2),
+Lesson("Извинение","すみません","sumimasen","извините / простите","Извинение и внимание",30,"Что значит すみません?",listOf("Извините","Спасибо","Вкусно","Друг"),0),
+Lesson("Знакомство","はじめまして","hajimemashite","приятно познакомиться","Первое знакомство",35,"Что говорят при первом знакомстве?",listOf("はじめまして","いただきます","おやすみ","おいしい"),0),
+Lesson("Имя","わたしは 〜です","watashi wa ... desu","я — ...","Представляемся",35,"Что означает わたしは アンナです?",listOf("Я Анна","Это Анна","Анна — учитель","Где Анна?"),0),
+Lesson("Человек","ひと","hito","человек","Базовое существительное",25,"Как по-японски «человек»?",listOf("ひと","ねこ","みず","ほん"),0),
+Lesson("Числа 1–3","いち・に・さん","ichi · ni · san","один · два · три","Считаем",30,"Как читается いち?",listOf("ni","ichi","san","yon"),1),
+Lesson("Числа 4–10","よん・ご・ろく・なな","yon · go · roku · nana","четыре · пять · шесть · семь","Продолжаем считать",30,"Как сказать «пять»?",listOf("ご","ろく","なな","はち"),0),
+Lesson("Дни недели","げつようび","getsuyoubi","понедельник","Календарь N5",35,"Какой день げつようび?",listOf("Понедельник","Среда","Пятница","Воскресенье"),0),
+Lesson("Сегодня","きょう","kyou","сегодня","Календарь",30,"Что значит きょう?",listOf("Вчера","Сегодня","Завтра","Сейчас"),1),
+Lesson("Время","いま なんじ？","ima nanji?","который сейчас час?","Спрашиваем время",40,"Что значит いま なんじ？",listOf("Где вокзал?","Который сейчас час?","Кто это?","Сколько стоит?"),1),
+Lesson("Часы","いちじ・さんじ","ichiji · sanji","час · три часа","Говорим время",35,"Как сказать «три часа»?",listOf("さんじ","さんぷん","さんにち","さんさい"),0),
+Lesson("Еда","ごはん","gohan","еда / рис","Базовая лексика еды",30,"Что значит ごはん?",listOf("Вода","Еда / рис","Чай","Магазин"),1),
+Lesson("Вкусно","おいしい","oishii","вкусно","Описываем еду",30,"Как сказать «вкусно»?",listOf("おいしい","たかい","おおきい","さむい"),0),
+Lesson("Кафе","みずを ください","mizu o kudasai","воды, пожалуйста","Просим в кафе",40,"Что вы просите этой фразой?",listOf("Кофе","Воду","Счёт","Меню"),1),
+Lesson("Просьба","おねがいします","onegaishimasu","пожалуйста / прошу","Вежливая просьба",35,"Какой смысл у おねがいします?",listOf("Пожалуйста / прошу","До завтра","Очень вкусно","Японский язык"),0),
+Lesson("Город","えき","eki","станция","Ориентация в городе",30,"Что значит えき?",listOf("Станция","Улица","Отель","Ресторан"),0),
+Lesson("Где?","どこですか","doko desu ka","где?","Местоположение",40,"Что значит どこですか?",listOf("Что это?","Кто это?","Где это?","Почему?"),2),
+Lesson("Семья","かぞく","kazoku","семья","Говорим о семье",30,"Как по-японски «семья»?",listOf("ともだち","かぞく","せんせい","がくせい"),1),
+Lesson("Друг","ともだち","tomodachi","друг","Люди вокруг нас",30,"Что значит ともだち?",listOf("Друг","Семья","Учитель","Студент"),0),
+Lesson("Студент","がくせい","gakusei","студент","Кто ты?",30,"Кто такой がくせい?",listOf("Учитель","Врач","Студент","Друг"),2),
+Lesson("Учитель","せんせい","sensei","учитель","Люди и профессии",30,"Что значит せんせい?",listOf("Учитель","Студент","Врач","Сотрудник"),0),
+Lesson("Нравится","すきです","suki desu","нравится","Предпочтения",45,"Что значит すきです?",listOf("Не знаю","Нравится","Не нравится","Понимаю"),1),
+Lesson("Частица は","わたしは がくせいです","watashi wa gakusei desu","я студент","Базовая грамматика",45,"Что делает は?",listOf("Обозначает тему","Обозначает время","Означает «нет»","Это глагол"),0),
+Lesson("です・ます","です・ます","desu · masu","вежливые формы","Вежливая речь N5",50,"Какая форма вежливая?",listOf("だ・る","です・ます","だった・た","ない・ん"),1),
+Lesson("Мини-диалог","すみません。えきは どこですか。","sumimasen. eki wa doko desu ka","Извините. Где станция?","Собираем всё вместе",55,"Как спросить, где станция?",listOf("えきは どこですか","えきは なんですか","みずを ください","おいしいです"),0),
+Lesson("N5 Boss","わたしは にほんごを べんきょうします","watashi wa nihongo o benkyou shimasu","я учу японский","Финальная проверка N5",100,"Что значит にほんごを べんきょうします?",listOf("Я люблю Японию","Я учу японский","Я говорю по-английски","Я иду на станцию"),1)
 )
 
 class MainActivity : ComponentActivity() {
@@ -63,6 +83,8 @@ fun KotobaApp() {
         var step by remember { mutableIntStateOf(0) }
         var xp by remember { mutableIntStateOf(126) }
         var done by remember { mutableIntStateOf(2) }
+        var xpPop by remember { mutableStateOf(false) }
+        LaunchedEffect(xpPop) { if (xpPop) { kotlinx.coroutines.delay(1000); xpPop = false } }
 
         Scaffold(
             containerColor=Washi,
@@ -85,6 +107,7 @@ fun KotobaApp() {
                             lesson=-1
                             tab=0
                             step=0
+                            xpPop=true
                         }
                     },
                     onBack={lesson=-1;step=0}
@@ -206,22 +229,66 @@ fun ProfileScreen(modifier:Modifier,xp:Int,done:Int){
 fun Achievement(t:String,s:String,on:Boolean){Card(shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=if(on)Color.White else Mist)){Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){Icon(if(on)Icons.Rounded.EmojiEvents else Icons.Rounded.Lock,null,tint=if(on)Gold else Color.Gray,modifier=Modifier.size(30.dp));Spacer(Modifier.width(14.dp));Column{Text(t,fontWeight=FontWeight.Bold);Text(s,color=Indigo,fontSize=12.sp)}}}}
 
 @Composable
-fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack:()->Unit){
-    val prompts=listOf("Послушай и запомни","Выбери правильное значение","Собери фразу","Финальная проверка")
-    val scale by animateFloatAsState(if(step==3)1.04f else 1f,tween(500),label="card")
-    Column(modifier.fillMaxSize().padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){TextButton(onClick=onBack){Text("← Назад")};Spacer(Modifier.weight(1f));Text(lesson.xp.toString()+" XP",color=Gold,fontWeight=FontWeight.Bold)}
-        Text(lesson.title,fontSize=30.sp,fontWeight=FontWeight.Bold);Text(prompts[step],color=Indigo)
+fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack:()->Unit) {
+    var selected by remember(lesson,step){mutableIntStateOf(-1)}
+    val answered=selected>=0
+    val correct=selected==lesson.answer
+    val pulse by rememberInfiniteTransition(label="pulse").animateFloat(0.97f,1.03f,infiniteRepeatable(tween(1200),RepeatMode.Reverse),label="pulse")
+    Column(modifier.fillMaxSize().padding(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+            TextButton(onClick=onBack){Text("← Назад")}
+            Spacer(Modifier.weight(1f))
+            Text(lesson.xp.toString()+" XP",color=Gold,fontWeight=FontWeight.Bold)
+        }
+        Text(lesson.title,fontSize=30.sp,fontWeight=FontWeight.Bold)
+        Text(when(step){0->"Запомни";1->"Пойми смысл";2->"Выбери ответ";else->"Финальная проверка"},color=Indigo)
         LinearProgressIndicator(progress={(step+1)/4f},Modifier.fillMaxWidth().height(8.dp),color=Red,trackColor=Mist)
-        Spacer(Modifier.height(10.dp))
-        Card(Modifier.fillMaxWidth().scale(scale),RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){
-            Column(Modifier.padding(26.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(18.dp)){
-                Box(Modifier.size(84.dp).background(Red.copy(alpha=.1f),CircleShape),contentAlignment=Alignment.Center){Text(if(step==3)"★" else lesson.jp,fontSize=if(step==3)42.sp else 25.sp,fontWeight=FontWeight.Bold,color=Red)}
-                Text(lesson.jp,fontSize=34.sp,fontWeight=FontWeight.Bold);Text(lesson.subtitle,color=Indigo)
-                AnimatedVisibility(visible=step>=1,enter=fadeIn()){Text(when(step){1->"Правильный смысл связан с контекстом.";2->"こんにちは → здравствуйте";else->"Отлично. Ты готов двигаться дальше."},color=Sage,fontWeight=FontWeight.SemiBold)}
-                Button(onClick=onNext,Modifier.fillMaxWidth().height(52.dp),shape=RoundedCornerShape(16.dp)){Text(if(step==3)"Забрать XP" else "Продолжить",fontSize=16.sp)}
+        Spacer(Modifier.height(4.dp))
+        AnimatedContent(targetState=step,transitionSpec={ (fadeIn(tween(260))+slideInHorizontally{it/4}) togetherWith fadeOut(tween(160)) },label="lessonStep") { current ->
+            when(current) {
+                0 -> {
+                    Card(Modifier.fillMaxWidth().scale(pulse),shape=RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
+                        Column(Modifier.padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(15.dp)) {
+                            Box(Modifier.size(86.dp).background(Red.copy(alpha=.1f),CircleShape),contentAlignment=Alignment.Center){Text("日",fontSize=36.sp,color=Red,fontWeight=FontWeight.Bold)}
+                            Text(lesson.jp,fontSize=34.sp,fontWeight=FontWeight.Black)
+                            Text(lesson.reading,color=Gold,fontSize=17.sp,fontWeight=FontWeight.Bold)
+                            Text(lesson.meaning,fontSize=19.sp,color=Indigo)
+                            Text(lesson.subtitle,color=Color.Gray)
+                        }
+                    }
+                    Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Запомнил →",fontSize=16.sp)}
+                }
+                1 -> {
+                    Card(Modifier.fillMaxWidth(),shape=RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
+                        Column(Modifier.padding(26.dp),verticalArrangement=Arrangement.spacedBy(15.dp)) {
+                            Text("Мини-подсказка",color=Gold,fontWeight=FontWeight.Bold)
+                            Text(lesson.jp,fontSize=30.sp,fontWeight=FontWeight.Bold)
+                            Text("Читается: "+lesson.reading)
+                            Text("Перевод: "+lesson.meaning,color=Indigo)
+                            Text("Прочитай вслух 2 раза. Затем проверь себя.",color=Sage,fontWeight=FontWeight.SemiBold)
+                        }
+                    }
+                    Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Понял →",fontSize=16.sp)}
+                }
+                else -> {
+                    Column(verticalArrangement=Arrangement.spacedBy(12.dp)) {
+                        Text(lesson.question,fontSize=19.sp,fontWeight=FontWeight.Bold)
+                        lesson.choices.forEachIndexed { index,choice ->
+                            val bg=when { !answered -> Color.White; index==lesson.answer -> Color(0xFFE3EEDC); index==selected -> Color(0xFFF5D9D5); else -> Color.White }
+                            Card(modifier=Modifier.fillMaxWidth().clickable(enabled=!answered){selected=index},shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=bg)) {
+                                Row(Modifier.fillMaxWidth().padding(17.dp),verticalAlignment=Alignment.CenterVertically) {
+                                    Box(Modifier.size(36.dp).background(Mist,CircleShape),contentAlignment=Alignment.Center){Text(('A'.code+index).toChar().toString(),fontWeight=FontWeight.Bold)}
+                                    Spacer(Modifier.width(12.dp)); Text(choice,fontSize=16.sp); Spacer(Modifier.weight(1f))
+                                    if(answered && index==lesson.answer) Icon(Icons.Rounded.CheckCircle,null,tint=Sage)
+                                    if(answered && index==selected && !correct) Icon(Icons.Rounded.Close,null,tint=Red)
+                                }
+                            }
+                        }
+                        AnimatedVisibility(visible=answered,enter=fadeIn()+expandVertically()) { Text(if(correct)"Отлично! 正解 🎉" else "Почти. Правильный ответ подсвечен.",color=if(correct)Sage else Red,fontWeight=FontWeight.Bold) }
+                        Button(onClick={if(answered)onNext else selected=lesson.answer},Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)) { Text(if(answered)if(step==3)"Забрать XP ✨" else "Дальше →" else "Проверить") }
+                    }
+                }
             }
         }
-        if(step==1||step==2)Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){OutlinedButton(onClick=onNext,Modifier.weight(1f)){Text("Не уверен")};OutlinedButton(onClick=onNext,Modifier.weight(1f)){Text("Знаю")}}
     }
 }
