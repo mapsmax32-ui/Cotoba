@@ -11,6 +11,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -133,48 +135,68 @@ fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
     val level=xp/100+1
     val progress=(xp%100)/100f
     val anim by animateFloatAsState(progress,tween(900),label="xp")
-    LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
-        item {
-            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
-                Column { Text("おかえりなさい",fontSize=28.sp,fontWeight=FontWeight.Bold); Text("Продолжим твой путь?",color=Indigo) }
-                Box(Modifier.size(52.dp).background(Red,CircleShape),contentAlignment=Alignment.Center){Text("N5",color=Color.White,fontWeight=FontWeight.Bold)}
+    LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)) {
+        item { Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
+            Column { Text("おかえりなさい",fontSize=28.sp,fontWeight=FontWeight.Bold); Text("Твой путь начинается здесь",color=Indigo) }
+            Box(Modifier.size(54.dp).background(Red,CircleShape),contentAlignment=Alignment.Center){Text("N5",color=Color.White,fontWeight=FontWeight.Black)}
+        }}
+        item { MentorCard(level,done) }
+        item { Card(Modifier.fillMaxWidth(),RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Indigo)) {
+            Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(13.dp)) {
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
+                    Column { Text("УРОВЕНЬ "+level,color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text("Самурай слов",color=Color.White,fontSize=24.sp,fontWeight=FontWeight.Bold) }
+                    Text(xp.toString()+" XP",color=Color.White,fontWeight=FontWeight.Bold)
+                }
+                LinearProgressIndicator(progress={anim},Modifier.fillMaxWidth().height(8.dp),color=Gold,trackColor=Color.White.copy(alpha=.18f))
+                Text((100-(xp%100)).toString()+" XP до следующего уровня",color=Color.White.copy(alpha=.75f),fontSize=12.sp)
             }
-        }
-        item {
-            Card(Modifier.fillMaxWidth(),RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Indigo)) {
-                Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
-                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
-                        Column { Text("УРОВЕНЬ "+level,color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text("Самурай слов",color=Color.White,fontSize=25.sp,fontWeight=FontWeight.Bold) }
-                        Text(xp.toString()+" XP",color=Color.White,fontWeight=FontWeight.Bold)
-                    }
-                    LinearProgressIndicator(progress={anim},Modifier.fillMaxWidth().height(8.dp),color=Gold,trackColor=Color.White.copy(alpha=.18f))
-                    Text((100-(xp%100)).toString()+" XP до следующего уровня",color=Color.White.copy(alpha=.75f),fontSize=12.sp)
+        }}
+        item { Text("Твоя миссия",fontSize=20.sp,fontWeight=FontWeight.Bold) }
+        item { Card(shape=RoundedCornerShape(24.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
+            Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(13.dp)) {
+                Row(verticalAlignment=Alignment.CenterVertically) {
+                    Box(Modifier.size(46.dp).background(Color(0xFFFFE5DF),CircleShape),contentAlignment=Alignment.Center){Text("日",color=Red,fontSize=24.sp)}
+                    Spacer(Modifier.width(12.dp)); Column { Text("Следующая миссия",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text("Приветствия",fontSize=20.sp,fontWeight=FontWeight.Bold) }
+                }
+                Text("4 этапа · японский + ромадзи + мини-квиз",color=Indigo)
+                Button(onClick=onStart,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Icon(Icons.Rounded.PlayArrow,null);Spacer(Modifier.width(6.dp));Text("Начать миссию")}
+            }
+        }}
+        item { Text("Режимы обучения",fontSize=20.sp,fontWeight=FontWeight.Bold) }
+        item { Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) { ModeCard("あ","Хирагана",Modifier.weight(1f)); ModeCard("文","Грамматика",Modifier.weight(1f)); ModeCard("会","Диалог",Modifier.weight(1f)) } }
+        item { OutlinedButton(onClick=onPath,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Icon(Icons.Rounded.Map,null);Spacer(Modifier.width(6.dp));Text("Открыть карту Японии")} }
+        item { Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){Stat("🔥 7","дней",Modifier.weight(1f));Stat(done.toString(),"уроков",Modifier.weight(1f));Stat("12","слов",Modifier.weight(1f))} }
+    }
+}
+@Composable
+fun MentorCard(level:Int,done:Int) {
+    val bob by rememberInfiniteTransition(label="mentor").animateFloat(.97f,1.03f,infiniteRepeatable(tween(1600),RepeatMode.Reverse),label="bob")
+    Card(Modifier.fillMaxWidth(),RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
+        Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
+            Box(Modifier.size(92.dp).scale(bob).background(Brush.radialGradient(listOf(Color(0xFFFFE4DE),Color(0xFFF6F0E5))),CircleShape),contentAlignment=Alignment.Center) {
+                Canvas(Modifier.size(78.dp)) {
+                    drawCircle(Color(0xFF202020),radius=30f,center=center.copy(y=center.y+3))
+                    drawCircle(Color(0xFFFFD5C8),radius=26f,center=center.copy(y=center.y+10))
+                    drawCircle(Color.White,radius=6f,center=center.copy(x=center.x-9,y=center.y+5))
+                    drawCircle(Color.White,radius=6f,center=center.copy(x=center.x+9,y=center.y+5))
+                    drawCircle(Red,radius=2.5f,center=center.copy(x=center.x-9,y=center.y+5))
+                    drawCircle(Red,radius=2.5f,center=center.copy(x=center.x+9,y=center.y+5))
                 }
             }
-        }
-        item {
-            Card(shape=RoundedCornerShape(24.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
-                Row(Modifier.fillMaxWidth().padding(18.dp),verticalAlignment=Alignment.CenterVertically) {
-                    Box(Modifier.size(52.dp).background(Color(0xFFFFE6D6),CircleShape),contentAlignment=Alignment.Center){Icon(Icons.Rounded.LocalFireDepartment,null,tint=Red)}
-                    Spacer(Modifier.width(14.dp))
-                    Column(Modifier.weight(1f)){Text("Серия 7 дней",fontWeight=FontWeight.Bold,fontSize=17.sp);Text("Ещё один урок — и серия продолжится",color=Indigo,fontSize=12.sp)}
-                    Text("🔥",fontSize=22.sp)
-                }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)) {
+                Text("КОТОБА",color=Gold,fontSize=11.sp,fontWeight=FontWeight.Black)
+                Text("「一緒に行こう！」",fontSize=17.sp,fontWeight=FontWeight.Bold)
+                Text("Пойдём дальше вместе!",color=Indigo,fontSize=13.sp)
+                Text("Уровень "+level+" · "+done+" миссий",color=Sage,fontSize=12.sp)
             }
         }
-        item{Text("Твоя миссия",fontSize=20.sp,fontWeight=FontWeight.Bold)}
-        item{
-            Card(shape=RoundedCornerShape(24.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){
-                Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
-                    Text("Пройти урок «Приветствия»",fontWeight=FontWeight.Bold,fontSize=18.sp)
-                    Text("4 мини-задания · 25 XP · ~5 минут",color=Indigo)
-                    Button(onClick=onStart,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Icon(Icons.Rounded.PlayArrow,null);Spacer(Modifier.width(6.dp));Text("Начать миссию")}
-                }
-            }
-        }
-        item{OutlinedButton(onClick=onPath,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Text("Открыть карту обучения")}}
-        item{Text("Сегодня",fontSize=20.sp,fontWeight=FontWeight.Bold)}
-        item{Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){Stat("12","слов",Modifier.weight(1f));Stat("8","мин",Modifier.weight(1f));Stat(done.toString(),"уроков",Modifier.weight(1f))}}
+    }
+}
+@Composable
+fun ModeCard(icon:String,title:String,m:Modifier) {
+    Card(modifier=m,shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
+        Column(Modifier.fillMaxWidth().padding(13.dp),horizontalAlignment=Alignment.CenterHorizontally) { Text(icon,fontSize=27.sp,color=Red,fontWeight=FontWeight.Bold); Text(title,fontSize=11.sp,fontWeight=FontWeight.Bold) }
     }
 }
 
@@ -183,24 +205,37 @@ fun Stat(a:String,b:String,m:Modifier){Card(modifier=m,shape=RoundedCornerShape(
 
 @Composable
 fun PathScreen(modifier:Modifier,done:Int,onLesson:(Int)->Unit){
-    LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
-        item{Text("Путь N5",fontSize=30.sp,fontWeight=FontWeight.Bold);Text("Каждый урок — новый ранг.",color=Indigo);Spacer(Modifier.height(8.dp))}
+    LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
+        item{
+            Text("Путь N5",fontSize=30.sp,fontWeight=FontWeight.Black)
+            Text("日本の旅 · путешествие по Японии",color=Indigo)
+            Spacer(Modifier.height(8.dp))
+            Card(shape=RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Color(0xFFEDE7D8))){
+                Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
+                    Text("🗾  ТВОЯ КАРТА",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Black)
+                    Text("Токио → Киото → Осака → Хоккайдо",fontSize=17.sp,fontWeight=FontWeight.Bold)
+                    Text("Открывай города по мере прохождения глав.",color=Indigo,fontSize=12.sp)
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){MapDot("東京",done>=5);MapDot("京都",done>=12);MapDot("大阪",done>=20);MapDot("北海道",done>=29)}
+                }
+            }
+        }
         itemsIndexed(lessons){i,l->
-            val unlocked=i<=done
-            val finished=i<done
+            val unlocked=i<=done; val finished=i<done
             Card(onClick={if(unlocked)onLesson(i)},enabled=unlocked,shape=RoundedCornerShape(22.dp),colors=CardDefaults.cardColors(containerColor=if(finished)Color.White else if(unlocked)Color(0xFFFFF7F1) else Mist)){
-                Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){
-                    Box(Modifier.size(52.dp).background(if(finished) Sage else if(unlocked) Red else Color.Gray, CircleShape),contentAlignment=Alignment.Center){
+                Row(Modifier.fillMaxWidth().padding(15.dp),verticalAlignment=Alignment.CenterVertically){
+                    Box(Modifier.size(50.dp).background(if(finished)Sage else if(unlocked)Red else Color.Gray,CircleShape),contentAlignment=Alignment.Center){
                         if(finished)Icon(Icons.Rounded.CheckCircle,null,tint=Color.White) else if(!unlocked)Icon(Icons.Rounded.Lock,null,tint=Color.White) else Text((i+1).toString(),color=Color.White,fontWeight=FontWeight.Bold)
                     }
-                    Spacer(Modifier.width(14.dp))
-                    Column(Modifier.weight(1f)){Text(l.title,fontWeight=FontWeight.Bold,fontSize=17.sp);Text(l.jp,color=Indigo);Text(l.xp.toString()+" XP · "+l.subtitle,color=Color.Gray,fontSize=11.sp)}
-                    if(finished)Text("✓",color=Sage,fontSize=24.sp,fontWeight=FontWeight.Bold)
+                    Spacer(Modifier.width(13.dp))
+                    Column(Modifier.weight(1f)){Text(l.title,fontWeight=FontWeight.Bold,fontSize=16.sp);Text(l.jp,color=Indigo);Text(l.xp.toString()+" XP · "+l.subtitle,color=Color.Gray,fontSize=11.sp)}
+                    if(i==29)Text("👑",fontSize=22.sp)
                 }
             }
         }
     }
 }
+@Composable
+fun MapDot(name:String,open:Boolean){Column(horizontalAlignment=Alignment.CenterHorizontally){Box(Modifier.size(34.dp).background(if(open)Red else Color.Gray,CircleShape),contentAlignment=Alignment.Center){Text("•",color=Color.White,fontSize=24.sp)};Text(name,fontSize=10.sp,fontWeight=FontWeight.Bold)}}
 
 @Composable
 fun WordsScreen(modifier:Modifier,onStart:()->Unit){
