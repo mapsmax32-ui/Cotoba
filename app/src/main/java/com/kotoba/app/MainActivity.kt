@@ -4,14 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,10 +22,8 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,11 +38,7 @@ private val Mist = Color(0xFFE8E1D3)
 
 data class Lesson(val title:String,val jp:String,val reading:String,val meaning:String,val subtitle:String,val xp:Int,val question:String,val choices:List<String>,val answer:Int)
 private val lessons = listOf(
-Lesson("Приветствия","こんにちは","konnichiwa","здравствуйте / добрый день","Базовые приветствия",25,"Что значит こんにちは?",listOf("Спасибо","Здравствуйте","До свидания","Извините"),1),
-Lesson("До встречи","さようなら","sayounara","до свидания","Прощаемся вежливо",25,"Что значит さようなら?",listOf("Доброе утро","До свидания","Пожалуйста","Добрый вечер"),1),
-Lesson("Доброе утро","おはようございます","ohayou gozaimasu","доброе утро","Утреннее приветствие",25,"Выбери «доброе утро».",listOf("こんばんは","おはようございます","ありがとう","すみません"),1),
-Lesson("Добрый вечер","こんばんは","konbanwa","добрый вечер","Приветствие вечером",25,"Как сказать «добрый вечер»?",listOf("こんばんは","こんにちは","おやすみなさい","はじめまして"),0),
-Lesson("Спасибо","ありがとう","arigatou","спасибо","Благодарность",30,"Что значит ありがとう?",listOf("Спасибо","Привет","Пока","Извините"),0),
+Lesson("Токио — Первое знакомство","こんにちは · おはようございます · こんばんは · ありがとう · さようなら","konnichiwa · ohayou gozaimasu · konbanwa · arigatou · sayounara","здравствуйте · доброе утро · добрый вечер · спасибо · до свидания","Первая миссия в Токио · 5 первых фраз",60,"Какая фраза означает «спасибо»?",listOf("こんにちは","ありがとう","さようなら","こんばんは"),1),
 Lesson("Очень вежливо","ありがとうございます","arigatou gozaimasu","большое спасибо","Вежливая благодарность",30,"Как сказать «большое спасибо» вежливо?",listOf("すみません","ありがとう","ありがとうございます","どうぞ"),2),
 Lesson("Извинение","すみません","sumimasen","извините / простите","Извинение и внимание",30,"Что значит すみません?",listOf("Извините","Спасибо","Вкусно","Друг"),0),
 Lesson("Знакомство","はじめまして","hajimemashite","приятно познакомиться","Первое знакомство",35,"Что говорят при первом знакомстве?",listOf("はじめまして","いただきます","おやすみ","おいしい"),0),
@@ -95,8 +84,8 @@ fun KotobaApp() {
         var tab by remember { mutableIntStateOf(0) }
         var lesson by remember { mutableIntStateOf(-1) }
         var step by remember { mutableIntStateOf(0) }
-        var xp by remember { mutableIntStateOf(126) }
-        var done by remember { mutableIntStateOf(2) }
+        var xp by remember { mutableIntStateOf(0) }
+        var done by remember { mutableIntStateOf(0) }
         var xpPop by remember { mutableStateOf(false) }
         LaunchedEffect(xpPop) { if (xpPop) { delay(1000); xpPop = false } }
 
@@ -161,27 +150,27 @@ fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
                 Text((100-(xp%100)).toString()+" XP до следующего уровня",color=Color.White.copy(alpha=.75f),fontSize=12.sp)
             }
         }}
-        item { Text("Твоя миссия",fontSize=20.sp,fontWeight=FontWeight.Bold) }
+        item { Text("Твоя первая миссия",fontSize=20.sp,fontWeight=FontWeight.Bold) }
         item { Card(shape=RoundedCornerShape(24.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
             Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(13.dp)) {
                 Row(verticalAlignment=Alignment.CenterVertically) {
-                    Box(Modifier.size(46.dp).background(Color(0xFFFFE5DF),CircleShape),contentAlignment=Alignment.Center){Text("日",color=Red,fontSize=24.sp)}
-                    Spacer(Modifier.width(12.dp)); Column { Text("Следующая миссия",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text(nextLesson.title,fontSize=20.sp,fontWeight=FontWeight.Bold) }
+                    Box(Modifier.size(46.dp).background(Color(0xFFFFE5DF),CircleShape),contentAlignment=Alignment.Center){Text("東京",color=Red,fontSize=13.sp,fontWeight=FontWeight.Bold)}
+                    Spacer(Modifier.width(12.dp)); Column { Text("Токио · Миссия 1",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text(nextLesson.title,fontSize=20.sp,fontWeight=FontWeight.Bold) }
                 }
-                Text("4 этапа · японский + ромадзи + мини-квиз",color=Indigo)
+                Text("5 стартовых тем объединены в одну сюжетную миссию · 4 этапа",color=Indigo)
                 Button(onClick=onStart,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Icon(Icons.Rounded.PlayArrow,null);Spacer(Modifier.width(6.dp));Text("Начать миссию")}
             }
         }}
         item { Text("Режимы обучения",fontSize=20.sp,fontWeight=FontWeight.Bold) }
         item { Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) { ModeCard("あ","Хирагана",Modifier.weight(1f)); ModeCard("文","Грамматика",Modifier.weight(1f)); ModeCard("会","Диалог",Modifier.weight(1f)) } }
         item { OutlinedButton(onClick=onPath,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Icon(Icons.Rounded.Map,null);Spacer(Modifier.width(6.dp));Text("Открыть карту Японии")} }
-        item { Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){Stat("🔥 7","дней",Modifier.weight(1f));Stat(done.toString(),"уроков",Modifier.weight(1f));Stat("12","слов",Modifier.weight(1f))} }
+        item { Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){Stat("🔥 7","дней",Modifier.weight(1f));Stat(done.toString(),"миссий",Modifier.weight(1f));Stat("12","слов",Modifier.weight(1f))} }
     }
 }
 @Composable
 fun MentorCard(level:Int,done:Int,xp:Int) {
     val bob by rememberInfiniteTransition(label="mentor").animateFloat(.96f,1.04f,infiniteRepeatable(tween(1400),RepeatMode.Reverse),label="bob")
-    val stage=when(level){1->"Гусёнок";2,3->"Юный Котоба";4,5->"Котоба-ниндзя";else->"Мастер Котоба"}
+    val stage=when(level){1->"Младенец Котоба";2,3->"Юный Котоба";4,5->"Котоба-ниндзя";else->"Мастер Котоба"}
     Card(Modifier.fillMaxWidth(),RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
         Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment=Alignment.CenterVertically) {
@@ -202,7 +191,6 @@ fun MentorCard(level:Int,done:Int,xp:Int) {
         }
     }
 }
-
 @Composable
 fun KotobaMascot(level:Int,modifier:Modifier=Modifier) {
     Canvas(modifier) {
@@ -228,11 +216,8 @@ fun KotobaMascot(level:Int,modifier:Modifier=Modifier) {
 }
 @Composable
 fun ModeCard(icon:String,title:String,m:Modifier) {
-    Card(modifier=m,shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
-        Column(Modifier.fillMaxWidth().padding(13.dp),horizontalAlignment=Alignment.CenterHorizontally) { Text(icon,fontSize=27.sp,color=Red,fontWeight=FontWeight.Bold); Text(title,fontSize=11.sp,fontWeight=FontWeight.Bold) }
-    }
+    Card(modifier=m,shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) { Column(Modifier.fillMaxWidth().padding(13.dp),horizontalAlignment=Alignment.CenterHorizontally) { Text(icon,fontSize=27.sp,color=Red,fontWeight=FontWeight.Bold); Text(title,fontSize=11.sp,fontWeight=FontWeight.Bold) } }
 }
-
 @Composable
 fun Stat(a:String,b:String,m:Modifier){Card(modifier=m,shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Column(Modifier.fillMaxWidth().padding(14.dp),horizontalAlignment=Alignment.CenterHorizontally){Text(a,fontSize=22.sp,fontWeight=FontWeight.Bold);Text(b,fontSize=11.sp,color=Indigo)}}}
 
@@ -247,8 +232,8 @@ fun PathScreen(modifier:Modifier,done:Int,onLesson:(Int)->Unit){
                 Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
                     Text("🗾  ТВОЯ КАРТА",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Black)
                     Text("Токио → Киото → Осака → Хоккайдо",fontSize=17.sp,fontWeight=FontWeight.Bold)
-                    Text("Открывай города по мере прохождения глав.",color=Indigo,fontSize=12.sp)
-                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){MapDot("東京",done>=5);MapDot("京都",done>=12);MapDot("大阪",done>=20);MapDot("北海道",done>=29)}
+                    Text("Первая миссия начинается в Токио. Открывай новые города по мере прохождения.",color=Indigo,fontSize=12.sp)
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){MapDot("東京",done>=1);MapDot("京都",done>=8);MapDot("大阪",done>=16);MapDot("北海道",done>=25)}
                 }
             }
         }
@@ -261,7 +246,7 @@ fun PathScreen(modifier:Modifier,done:Int,onLesson:(Int)->Unit){
                     }
                     Spacer(Modifier.width(13.dp))
                     Column(Modifier.weight(1f)){Text(l.title,fontWeight=FontWeight.Bold,fontSize=16.sp);Text(l.jp,color=Indigo);Text(l.xp.toString()+" XP · "+l.subtitle,color=Color.Gray,fontSize=11.sp)}
-                    if(i==29)Text("👑",fontSize=22.sp)
+                    if(i==lessons.lastIndex)Text("👑",fontSize=22.sp)
                 }
             }
         }
@@ -307,7 +292,6 @@ fun AlphabetScreen(modifier:Modifier) {
         }
     }
 }
-
 @Composable
 fun WordsScreen(modifier:Modifier,onStart:()->Unit){
     val words=listOf("こんにちは" to "здравствуйте","ありがとう" to "спасибо","すみません" to "извините","おいしい" to "вкусно","ともだち" to "друг","せんせい" to "учитель")
@@ -317,7 +301,6 @@ fun WordsScreen(modifier:Modifier,onStart:()->Unit){
         item{Button(onClick=onStart,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Text("Тренировать слова")}}
     }
 }
-
 @Composable
 fun ReviewScreen(modifier:Modifier,onStart:()->Unit){
     Column(modifier.fillMaxSize().padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
@@ -326,16 +309,14 @@ fun ReviewScreen(modifier:Modifier,onStart:()->Unit){
         Text("Ритм",fontSize=20.sp,fontWeight=FontWeight.Bold);Text("🔥 7 дней подряд",fontSize=18.sp);Text("Лучший результат: 12 дней",color=Indigo)
     }
 }
-
 @Composable
 fun ProfileScreen(modifier:Modifier,xp:Int,done:Int){
     Column(modifier.fillMaxSize().padding(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
         Text("Твой профиль",fontSize=30.sp,fontWeight=FontWeight.Bold)
-        Card(shape=RoundedCornerShape(26.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Column(Modifier.fillMaxWidth().padding(22.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){Text("称号",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold);Text("Начинающий самурай",fontSize=24.sp,fontWeight=FontWeight.Bold);Text("Уровень "+(xp/100+1)+" · "+xp+" XP · "+done+" уроков",color=Indigo)}}
-        Text("Достижения",fontSize=20.sp,fontWeight=FontWeight.Bold);Achievement("Первый шаг","Заверши первый урок",done>=1);Achievement("Серия 7","Занимайся семь дней",true);Achievement("Котоба","Собери 100 слов",false)
+        Card(shape=RoundedCornerShape(26.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Column(Modifier.fillMaxWidth().padding(22.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){Text("称号",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold);Text("Начинающий самурай",fontSize=24.sp,fontWeight=FontWeight.Bold);Text("Уровень "+(xp/100+1)+" · "+xp+" XP · "+done+" миссий",color=Indigo)}}
+        Text("Достижения",fontSize=20.sp,fontWeight=FontWeight.Bold);Achievement("Первый шаг","Заверши первую миссию в Токио",done>=1);Achievement("Серия 7","Занимайся семь дней",true);Achievement("Котоба","Собери 100 слов",false)
     }
 }
-
 @Composable
 fun Achievement(t:String,s:String,on:Boolean){Card(shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=if(on)Color.White else Mist)){Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){Icon(if(on)Icons.Rounded.EmojiEvents else Icons.Rounded.Lock,null,tint=if(on)Gold else Color.Gray,modifier=Modifier.size(30.dp));Spacer(Modifier.width(14.dp));Column{Text(t,fontWeight=FontWeight.Bold);Text(s,color=Indigo,fontSize=12.sp)}}}}
 
@@ -344,67 +325,19 @@ fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack
     var selected by remember(lesson,step){mutableIntStateOf(-1)}
     val answered=selected>=0
     val correct=selected==lesson.answer
-    LaunchedEffect(selected, step) {
-        if (selected >= 0 && correct) {
-            delay(700)
-            onNext()
-        }
-    }
+    LaunchedEffect(selected, step) { if (selected >= 0 && correct) { delay(700); onNext() } }
     val pulse by rememberInfiniteTransition(label="pulse").animateFloat(0.97f,1.03f,infiniteRepeatable(tween(1200),RepeatMode.Reverse),label="pulse")
     Column(modifier.fillMaxSize().padding(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
-            TextButton(onClick=onBack){Text("← Назад")}
-            Spacer(Modifier.weight(1f))
-            Text(lesson.xp.toString()+" XP",color=Gold,fontWeight=FontWeight.Bold)
-        }
+        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) { TextButton(onClick=onBack){Text("← Назад")}; Spacer(Modifier.weight(1f)); Text(lesson.xp.toString()+" XP",color=Gold,fontWeight=FontWeight.Bold) }
         Text(lesson.title,fontSize=30.sp,fontWeight=FontWeight.Bold)
         Text(when(step){0->"Запомни";1->"Пойми смысл";2->"Выбери ответ";else->"Финальная проверка"},color=Indigo)
         LinearProgressIndicator(progress={(step+1)/4f},Modifier.fillMaxWidth().height(8.dp),color=Red,trackColor=Mist)
         Spacer(Modifier.height(4.dp))
         AnimatedContent(targetState=step,transitionSpec={ (fadeIn(tween(260))+slideInHorizontally{it/4}) togetherWith fadeOut(tween(160)) },label="lessonStep") { current ->
             when(current) {
-                0 -> {
-                    Card(Modifier.fillMaxWidth().scale(pulse),shape=RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
-                        Column(Modifier.padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(15.dp)) {
-                            Box(Modifier.size(86.dp).background(Red.copy(alpha=.1f),CircleShape),contentAlignment=Alignment.Center){Text("日",fontSize=36.sp,color=Red,fontWeight=FontWeight.Bold)}
-                            Text(lesson.jp,fontSize=34.sp,fontWeight=FontWeight.Black)
-                            Text(lesson.reading,color=Gold,fontSize=17.sp,fontWeight=FontWeight.Bold)
-                            Text(lesson.meaning,fontSize=19.sp,color=Indigo)
-                            Text(lesson.subtitle,color=Color.Gray)
-                        }
-                    }
-                    Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Запомнил →",fontSize=16.sp)}
-                }
-                1 -> {
-                    Card(Modifier.fillMaxWidth(),shape=RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
-                        Column(Modifier.padding(26.dp),verticalArrangement=Arrangement.spacedBy(15.dp)) {
-                            Text("Мини-подсказка",color=Gold,fontWeight=FontWeight.Bold)
-                            Text(lesson.jp,fontSize=30.sp,fontWeight=FontWeight.Bold)
-                            Text("Читается: "+lesson.reading)
-                            Text("Перевод: "+lesson.meaning,color=Indigo)
-                            Text("Прочитай вслух 2 раза. Затем проверь себя.",color=Sage,fontWeight=FontWeight.SemiBold)
-                        }
-                    }
-                    Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Понял →",fontSize=16.sp)}
-                }
-                else -> {
-                    Column(verticalArrangement=Arrangement.spacedBy(12.dp)) {
-                        Text(lesson.question,fontSize=19.sp,fontWeight=FontWeight.Bold)
-                        lesson.choices.forEachIndexed { index,choice ->
-                            val bg=when { !answered -> Color.White; index==lesson.answer -> Color(0xFFE3EEDC); index==selected -> Color(0xFFF5D9D5); else -> Color.White }
-                            Card(modifier=Modifier.fillMaxWidth().clickable(enabled=!answered){selected=index},shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=bg)) {
-                                Row(Modifier.fillMaxWidth().padding(17.dp),verticalAlignment=Alignment.CenterVertically) {
-                                    Box(Modifier.size(36.dp).background(Mist,CircleShape),contentAlignment=Alignment.Center){Text(('A'.code+index).toChar().toString(),fontWeight=FontWeight.Bold)}
-                                    Spacer(Modifier.width(12.dp)); Text(choice,fontSize=16.sp); Spacer(Modifier.weight(1f))
-                                    if(answered && index==lesson.answer) Icon(Icons.Rounded.CheckCircle,null,tint=Sage)
-                                    if(answered && index==selected && !correct) Icon(Icons.Rounded.Close,null,tint=Red)
-                                }
-                            }
-                        }
-                        AnimatedVisibility(visible=answered,enter=fadeIn()+expandVertically()) { Text(if(correct) if(step==3) "Миссия завершена! 正解 🎉" else "Отлично! 正解 🎉" else "Почти. Правильный ответ подсвечен.",color=if(correct)Sage else Red,fontWeight=FontWeight.Bold) }
-                        Button(onClick={if(answered) onNext() else selected=lesson.answer},Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)) { Text(if(answered)if(step==3)"Завершить урок · +"+lesson.xp+" XP ✨" else "Продолжить →" else "Проверить") }
-                    }
-                }
+                0 -> { Card(Modifier.fillMaxWidth().scale(pulse),shape=RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) { Column(Modifier.padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(15.dp)) { Box(Modifier.size(86.dp).background(Red.copy(alpha=.1f),CircleShape),contentAlignment=Alignment.Center){Text("東京",fontSize=22.sp,color=Red,fontWeight=FontWeight.Bold)}; Text(lesson.jp,fontSize=25.sp,fontWeight=FontWeight.Black); Text(lesson.reading,color=Gold,fontSize=15.sp,fontWeight=FontWeight.Bold); Text(lesson.meaning,fontSize=17.sp,color=Indigo); Text(lesson.subtitle,color=Color.Gray) } }; Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Запомнил →",fontSize=16.sp)} }
+                1 -> { Card(Modifier.fillMaxWidth(),shape=RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) { Column(Modifier.padding(26.dp),verticalArrangement=Arrangement.spacedBy(15.dp)) { Text("Мини-подсказка",color=Gold,fontWeight=FontWeight.Bold); Text(lesson.jp,fontSize=25.sp,fontWeight=FontWeight.Bold); Text("Читается: "+lesson.reading); Text("Перевод: "+lesson.meaning,color=Indigo); Text("Прочитай вслух 2 раза. Затем проверь себя.",color=Sage,fontWeight=FontWeight.SemiBold) } }; Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Понял →",fontSize=16.sp)} }
+                else -> { Column(verticalArrangement=Arrangement.spacedBy(12.dp)) { Text(lesson.question,fontSize=19.sp,fontWeight=FontWeight.Bold); lesson.choices.forEachIndexed { index,choice -> val bg=when { !answered -> Color.White; index==lesson.answer -> Color(0xFFE3EEDC); index==selected -> Color(0xFFF5D9D5); else -> Color.White }; Card(modifier=Modifier.fillMaxWidth().clickable(enabled=!answered){selected=index},shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=bg)) { Row(Modifier.fillMaxWidth().padding(17.dp),verticalAlignment=Alignment.CenterVertically) { Box(Modifier.size(36.dp).background(Mist,CircleShape),contentAlignment=Alignment.Center){Text(('A'.code+index).toChar().toString(),fontWeight=FontWeight.Bold)}; Spacer(Modifier.width(12.dp)); Text(choice,fontSize=16.sp); Spacer(Modifier.weight(1f)); if(answered && index==lesson.answer) Icon(Icons.Rounded.CheckCircle,null,tint=Sage); if(answered && index==selected && !correct) Icon(Icons.Rounded.Close,null,tint=Red) } } }; AnimatedVisibility(visible=answered,enter=fadeIn()+expandVertically()) { Text(if(correct) if(step==3) "Миссия завершена! 正解 🎉" else "Отлично! 正解 🎉" else "Почти. Правильный ответ подсвечен.",color=if(correct)Sage else Red,fontWeight=FontWeight.Bold) }; Button(onClick={if(answered) onNext() else selected=lesson.answer},Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)) { Text(if(answered)if(step==3)"Завершить миссию · +"+lesson.xp+" XP ✨" else "Продолжить →" else "Проверить") } } }
             }
         }
     }
