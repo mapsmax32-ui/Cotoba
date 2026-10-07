@@ -175,71 +175,241 @@ fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
 }
 @Composable
 fun MentorCard(level:Int,done:Int,xp:Int) {
-    val bob by rememberInfiniteTransition(label="mentor").animateFloat(.98f,1.03f,infiniteRepeatable(tween(1300),RepeatMode.Reverse),label="bob")
-    val stage=when(level){1->"Младенец Котоба";2,3->"Юный Котоба";4,5->"Котоба-ниндзя";else->"Мастер Котоба"}
+    val bob by rememberInfiniteTransition(label="mentor").animateFloat(
+        .985f,1.015f,
+        infiniteRepeatable(tween(1500),RepeatMode.Reverse),
+        label="bob"
+    )
+    val stage = when {
+        xp >= 5000 -> "Легенда"
+        xp >= 2000 -> "Мастер"
+        xp >= 1000 -> "Знаток"
+        xp >= 500 -> "Ученик"
+        xp >= 100 -> "Новичок"
+        else -> "Младенец"
+    }
+    val nextXp = when {
+        xp < 100 -> 100
+        xp < 500 -> 500
+        xp < 1000 -> 1000
+        xp < 2000 -> 2000
+        xp < 5000 -> 5000
+        else -> 5000
+    }
+    val progress = if (xp >= 5000) 1f else {
+        val prev = when {
+            xp < 100 -> 0
+            xp < 500 -> 100
+            xp < 1000 -> 500
+            xp < 2000 -> 1000
+            else -> 2000
+        }
+        ((xp-prev).toFloat()/(nextXp-prev).coerceAtLeast(1)).coerceIn(0f,1f)
+    }
     Card(Modifier.fillMaxWidth(),RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
         Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment=Alignment.CenterVertically) {
-                Box(Modifier.size(154.dp).scale(bob).background(Brush.radialGradient(listOf(Color(0xFFFFF5DC),Color(0xFFE8E1D3))),CircleShape),contentAlignment=Alignment.Center) {
-                    KotobaMascot(level,Modifier.size(146.dp))
+                Box(
+                    Modifier.size(166.dp).scale(bob)
+                        .background(Brush.radialGradient(listOf(Color(0xFFFFF8E8),Color(0xFFE8E1D3))),CircleShape),
+                    contentAlignment=Alignment.Center
+                ) {
+                    KotobaMascot(xp,Modifier.size(158.dp))
                 }
                 Spacer(Modifier.width(15.dp))
                 Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)) {
-                    Text("МР. КОТОБА",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Black)
-                    Text(stage,fontSize=21.sp,fontWeight=FontWeight.ExtraBold)
-                    Text(if(level==1)"「おぎゃー！」" else "「一緒に行こう！」",fontSize=16.sp,fontWeight=FontWeight.Bold)
-                    Text(if(level==1)"Он только появился. Первый урок — его первый шаг." else "Маскот растёт вместе с твоим прогрессом.",color=Indigo,fontSize=12.sp)
-                    Text("Уровень "+level+" · "+done+" уроков",color=Sage,fontSize=12.sp)
+                    Text("KOTOBA",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Black)
+                    Text(stage,fontSize=23.sp,fontWeight=FontWeight.ExtraBold)
+                    Text(
+                        when {
+                            xp < 100 -> "「おぎゃー！」"
+                            xp < 500 -> "「いっしょに！」"
+                            xp < 1000 -> "「べんきょうしよう！」"
+                            xp < 2000 -> "「わかった！」"
+                            xp < 5000 -> "「まかせて！」"
+                            else -> "「いこう！」"
+                        },
+                        fontSize=15.sp,fontWeight=FontWeight.Bold
+                    )
+                    Text(
+                        if(xp < 100) "Первый уровень. Он только появился в Токио."
+                        else "Маскот эволюционирует вместе с твоим XP.",
+                        color=Indigo,fontSize=12.sp
+                    )
+                    Text("Уровень $level · $done уроков · $xp XP",color=Sage,fontSize=12.sp)
                 }
             }
-            LinearProgressIndicator(progress={((xp%100)/100f)},Modifier.fillMaxWidth().height(7.dp),color=Gold,trackColor=Mist)
-            Text(if(level==1)"Первый уровень · Младенец Котоба · 0–99 XP" else "До следующего облика: "+(100-(xp%100))+" XP",color=Indigo,fontSize=11.sp)
+            LinearProgressIndicator(
+                progress={progress},
+                Modifier.fillMaxWidth().height(7.dp),
+                color=Gold,trackColor=Mist
+            )
+            Text(
+                if(xp >= 5000) "Форма Легенды достигнута · 5 000 XP"
+                else "Следующая форма: $nextXp XP",
+                color=Indigo,fontSize=11.sp
+            )
         }
     }
 }
+
 @Composable
-fun KotobaMascot(level:Int,modifier:Modifier=Modifier) {
+fun KotobaMascot(xp:Int,modifier:Modifier=Modifier) {
     Canvas(modifier) {
-        val c=center
-        val green=Color(0xFF9BCB72)
-        val green2=Color(0xFF78A95F)
-        val skin=Color(0xFFFFD7C9)
-        val diaper=Color(0xFFF7F0DF)
-        if(level==1){
-            drawCircle(green,39f,c.copy(x=c.x-12f,y=c.y+28f))
-            drawCircle(green,47f,c.copy(x=c.x+24f,y=c.y-6f))
-            drawCircle(green2,20f,c.copy(x=c.x-37f,y=c.y+41f))
-            drawCircle(green2,18f,c.copy(x=c.x+55f,y=c.y+43f))
-            drawOval(diaper,topLeft=c.copy(x=c.x-8f,y=c.y+27f),size=androidx.compose.ui.geometry.Size(66f,38f))
-            drawLine(Gold,c.copy(x=c.x-8f,y=c.y+42f),c.copy(x=c.x+58f,y=c.y+42f),strokeWidth=3f)
-            drawCircle(skin,4f,c.copy(x=c.x+2f,y=c.y+42f))
-            drawCircle(skin,4f,c.copy(x=c.x+45f,y=c.y+42f))
-            drawCircle(Color.White,9f,c.copy(x=c.x+9f,y=c.y-14f))
-            drawCircle(Color.White,9f,c.copy(x=c.x+39f,y=c.y-14f))
-            drawCircle(Ink,4f,c.copy(x=c.x+11f,y=c.y-13f))
-            drawCircle(Ink,4f,c.copy(x=c.x+38f,y=c.y-13f))
-            drawArc(Red,10f,160f,false,c.copy(x=c.x+8f,y=c.y+1f),style=Stroke(width=4f))
-            drawLine(green2,c.copy(x=c.x+1f,y=c.y-48f),c.copy(x=c.x-13f,y=c.y-67f),strokeWidth=5f)
-            drawLine(green2,c.copy(x=c.x+48f,y=c.y-45f),c.copy(x=c.x+62f,y=c.y-64f),strokeWidth=5f)
-            drawOval(green2,topLeft=c.copy(x=c.x-22f,y=c.y-78f),size=androidx.compose.ui.geometry.Size(23f,11f))
-            drawOval(green2,topLeft=c.copy(x=c.x+55f,y=c.y-74f),size=androidx.compose.ui.geometry.Size(23f,11f))
-            drawCircle(Red,5f,c.copy(x=c.x+24f,y=c.y+27f))
-        } else {
-            val body=when { level>=6->Color(0xFF8E6CCB); level>=4->Color(0xFF5E8F72); else->green }
-            val segments=when { level>=6->5; level>=4->4; else->3 }
-            for(i in 0 until segments) drawCircle(body,31f-i*1.2f,c.copy(x=c.x-38f+i*18f,y=c.y+25f))
-            drawCircle(green,42f,c.copy(x=c.x+24f,y=c.y-6f))
-            drawCircle(Color.White,9f,c.copy(x=c.x+11f,y=c.y-13f)); drawCircle(Color.White,9f,c.copy(x=c.x+40f,y=c.y-13f))
-            drawCircle(Ink,4f,c.copy(x=c.x+13f,y=c.y-12f)); drawCircle(Ink,4f,c.copy(x=c.x+38f,y=c.y-12f))
-            drawArc(Red,0f,180f,false,c.copy(x=c.x+10f,y=c.y+3f),style=Stroke(width=4f))
-            drawLine(green2,c.copy(x=c.x+5f,y=c.y-42f),c.copy(x=c.x-7f,y=c.y-60f),strokeWidth=5f)
-            drawLine(green2,c.copy(x=c.x+43f,y=c.y-42f),c.copy(x=c.x+56f,y=c.y-60f),strokeWidth=5f)
-            drawOval(green2,topLeft=c.copy(x=c.x-17f,y=c.y-72f),size=androidx.compose.ui.geometry.Size(25f,12f))
-            drawOval(green2,topLeft=c.copy(x=c.x+51f,y=c.y-72f),size=androidx.compose.ui.geometry.Size(25f,12f))
-            if(level>=4) drawLine(Gold,c.copy(x=c.x-15f,y=c.y+18f),c.copy(x=c.x-46f,y=c.y+3f),strokeWidth=8f)
+        val sx = size.width / 160f
+        val sy = size.height / 160f
+        scale(sx, sy) {
+            val cx = 80f
+            val green = Color(0xFFA9D957)
+            val lightGreen = Color(0xFFC7EA72)
+            val darkGreen = Color(0xFF5F9E3E)
+            val leaf = Color(0xFF4F9E2C)
+            val leafLight = Color(0xFF83C83D)
+            val cream = Color(0xFFF4E8C9)
+            val scarf = Color(0xFFD9362F)
+            val scarfDark = Color(0xFFA92225)
+            val brown = Color(0xFF6A4930)
+            val skin = Color(0xFFFFC7B7)
+
+            val stage = when {
+                xp >= 5000 -> 5
+                xp >= 2000 -> 4
+                xp >= 1000 -> 3
+                xp >= 500 -> 2
+                xp >= 100 -> 1
+                else -> 0
+            }
+
+            // Tail/body: soft segmented caterpillar silhouette like the reference.
+            val segments = when(stage) {
+                0 -> 3
+                1 -> 4
+                2 -> 5
+                3 -> 5
+                4,5 -> 6
+                else -> 3
+            }
+            for (i in 0 until segments) {
+                val x = 28f + i*18f
+                val y = 112f + if(i%2==0) 4f else 0f
+                drawCircle(
+                    if(i==segments-1) green else lightGreen,
+                    23f + (i.coerceAtMost(3))*1.2f,
+                    Offset(x,y)
+                )
+                drawCircle(darkGreen.copy(alpha=.30f),5f,Offset(x-10f,y+7f))
+            }
+
+            // Cream belly.
+            drawOval(
+                cream,
+                topLeft=Offset(52f,91f),
+                size=androidx.compose.ui.geometry.Size(70f,48f)
+            )
+
+            // Head.
+            drawCircle(green,42f,Offset(102f,61f))
+            drawCircle(lightGreen.copy(alpha=.65f),34f,Offset(94f,52f))
+
+            // Leaf antennae.
+            fun antenna(x:Float,lean:Float) {
+                drawLine(darkGreen,Offset(x,28f),Offset(x+lean,9f),strokeWidth=4f)
+                drawOval(
+                    leaf,
+                    topLeft=Offset(x+lean-9f,0f),
+                    size=androidx.compose.ui.geometry.Size(23f,12f)
+                )
+                drawLine(leafLight,Offset(x+lean-3f,3f),Offset(x+lean+7f,7f),strokeWidth=1.5f)
+            }
+            antenna(91f,-8f)
+            antenna(119f,10f)
+
+            // Huge glossy anime eyes.
+            fun eye(x:Float) {
+                drawCircle(Color.White,11f,Offset(x,55f))
+                drawCircle(Color(0xFF5B3B24),7f,Offset(x,57f))
+                drawCircle(Color.Black,4.6f,Offset(x,58f))
+                drawCircle(Color.White,2.3f,Offset(x-2f,54f))
+            }
+            eye(91f); eye(116f)
+
+            // Blush.
+            drawCircle(Color(0xFFFF8F91).copy(alpha=.42f),5f,Offset(80f,70f))
+            drawCircle(Color(0xFFFF8F91).copy(alpha=.42f),5f,Offset(128f,70f))
+
+            // Happy mouth.
+            drawArc(scarfDark,15f,150f,false,Offset(96f,65f),style=Stroke(width=3f))
+
+            // Stage 0 = baby wrapped in a diaper, exactly the starting fantasy.
+            if(stage == 0) {
+                drawOval(Color.White.copy(alpha=.96f),Offset(59f,87f),androidx.compose.ui.geometry.Size(66f,30f))
+                drawArc(Red,0f,180f,false,Offset(61f,91f),style=Stroke(width=2f))
+                drawCircle(skin,4f,Offset(65f,109f))
+                drawCircle(skin,4f,Offset(118f,108f))
+            } else {
+                // Red scarf appears from Novice onward.
+                drawOval(scarf,Offset(58f,82f),androidx.compose.ui.geometry.Size(72f,20f))
+                drawPath(
+                    Path().apply {
+                        moveTo(112f,92f); lineTo(145f,105f); lineTo(126f,111f); close()
+                    },
+                    scarf
+                )
+                drawLine(scarfDark,Offset(61f,91f),Offset(130f,91f),strokeWidth=3f)
+
+                // Medal from Student onward.
+                if(stage >= 2) {
+                    drawCircle(scarfDark,9f,Offset(105f,105f))
+                    drawCircle(Gold,7f,Offset(105f,105f))
+                    drawLine(Ink,Offset(102f,101f),Offset(102f,109f),strokeWidth=1.6f)
+                    drawLine(Ink,Offset(99f,105f),Offset(108f,105f),strokeWidth=1.6f)
+                }
+
+                // Backpack / scroll.
+                if(stage >= 2) {
+                    drawRoundRect(
+                        brown,Offset(34f,88f),
+                        androidx.compose.ui.geometry.Size(25f,35f),
+                        cornerRadius=6f
+                    )
+                    drawLine(Gold,Offset(38f,94f),Offset(54f,94f),strokeWidth=2f)
+                    drawLine(brown,Offset(43f,86f),Offset(39f,78f),strokeWidth=3f)
+                    drawLine(brown,Offset(51f,86f),Offset(55f,78f),strokeWidth=3f)
+                }
+
+                // Bigger accessories and leaf cape at Master/Legend.
+                if(stage >= 4) {
+                    drawOval(leaf,Offset(22f,60f),androidx.compose.ui.geometry.Size(34f,50f))
+                    drawLine(darkGreen,Offset(38f,67f),Offset(38f,99f),strokeWidth=2f)
+                    drawPath(
+                        Path().apply {
+                            moveTo(42f,82f); lineTo(25f,108f); lineTo(45f,101f); close()
+                        },
+                        leafLight
+                    )
+                }
+
+                // Legend crown-like leaf crest.
+                if(stage >= 5) {
+                    drawOval(Gold,Offset(118f,24f),androidx.compose.ui.geometry.Size(24f,8f))
+                    drawOval(Gold,Offset(128f,28f),androidx.compose.ui.geometry.Size(20f,7f))
+                }
+            }
+
+            // Small feet/paws.
+            if(stage >= 1) {
+                drawOval(brown,Offset(72f,128f),androidx.compose.ui.geometry.Size(14f,10f))
+                drawOval(brown,Offset(101f,130f),androidx.compose.ui.geometry.Size(14f,10f))
+            }
+
+            // Character highlight and leaf spots.
+            drawCircle(Color.White.copy(alpha=.18f),7f,Offset(78f,43f))
+            drawCircle(darkGreen.copy(alpha=.32f),4f,Offset(74f,59f))
+            drawCircle(darkGreen.copy(alpha=.25f),3f,Offset(124f,84f))
         }
     }
 }
+
 @Composable
 fun ModeCard(icon:String,title:String,m:Modifier) {
     Card(modifier=m,shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) { Column(Modifier.fillMaxWidth().padding(13.dp),horizontalAlignment=Alignment.CenterHorizontally) { Text(icon,fontSize=27.sp,color=Red,fontWeight=FontWeight.Bold); Text(title,fontSize=11.sp,fontWeight=FontWeight.Bold) } }
