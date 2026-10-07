@@ -264,7 +264,7 @@ fun KotobaMascot(xp:Int,modifier:Modifier=Modifier) {
     Box(modifier.offset(y=bob.dp),contentAlignment=Alignment.Center){
         Canvas(Modifier.fillMaxSize()){
             val s=size.minDimension/160f
-            withTransform({scale(s)}){
+            withTransform({ scale(scaleX=s, scaleY=s, pivot=Offset.Zero) }){
                 val ox=(size.width/s-160f)/2f; val oy=(size.height/s-160f)/2f
                 translate(ox,oy){
                     val n=when(stage){0->3;1->4;2->5;3->5;else->6}
