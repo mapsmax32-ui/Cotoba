@@ -162,7 +162,7 @@ fun PathScreen(modifier:Modifier,done:Int,onLesson:(Int)->Unit){
             val finished=i<done
             Card(onClick={if(unlocked)onLesson(i)},enabled=unlocked,shape=RoundedCornerShape(22.dp),colors=CardDefaults.cardColors(containerColor=if(finished)Color.White else if(unlocked)Color(0xFFFFF7F1) else Mist)){
                 Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){
-                    Box(Modifier.size(52.dp).background(if(finished)Sage else if(unlocked)Red) else Color.Gray,CircleShape),contentAlignment=Alignment.Center){
+                    Box(Modifier.size(52.dp).background(if(finished) Sage else if(unlocked) Red else Color.Gray, CircleShape),contentAlignment=Alignment.Center){
                         if(finished)Icon(Icons.Rounded.CheckCircle,null,tint=Color.White) else if(!unlocked)Icon(Icons.Rounded.Lock,null,tint=Color.White) else Text((i+1).toString(),color=Color.White,fontWeight=FontWeight.Bold)
                     }
                     Spacer(Modifier.width(14.dp))
