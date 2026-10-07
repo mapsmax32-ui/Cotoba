@@ -256,157 +256,43 @@ fun MentorCard(level:Int,done:Int,xp:Int) {
 
 @Composable
 fun KotobaMascot(xp:Int,modifier:Modifier=Modifier) {
-    Canvas(modifier) {
-        val sx = size.width / 160f
-        val sy = size.height / 160f
-        withTransform({ scale(sx, sy) }) {
-            val cx = 80f
-            val green = Color(0xFFA9D957)
-            val lightGreen = Color(0xFFC7EA72)
-            val darkGreen = Color(0xFF5F9E3E)
-            val leaf = Color(0xFF4F9E2C)
-            val leafLight = Color(0xFF83C83D)
-            val cream = Color(0xFFF4E8C9)
-            val scarf = Color(0xFFD9362F)
-            val scarfDark = Color(0xFFA92225)
-            val brown = Color(0xFF6A4930)
-            val skin = Color(0xFFFFC7B7)
-
-            val stage = when {
-                xp >= 5000 -> 5
-                xp >= 2000 -> 4
-                xp >= 1000 -> 3
-                xp >= 500 -> 2
-                xp >= 100 -> 1
-                else -> 0
-            }
-
-            // Tail/body: soft segmented caterpillar silhouette like the reference.
-            val segments = when(stage) {
-                0 -> 3
-                1 -> 4
-                2 -> 5
-                3 -> 5
-                4,5 -> 6
-                else -> 3
-            }
-            for (i in 0 until segments) {
-                val x = 28f + i*18f
-                val y = 112f + if(i%2==0) 4f else 0f
-                drawCircle(
-                    if(i==segments-1) green else lightGreen,
-                    23f + (i.coerceAtMost(3))*1.2f,
-                    Offset(x,y)
-                )
-                drawCircle(darkGreen.copy(alpha=.30f),5f,Offset(x-10f,y+7f))
-            }
-
-            // Cream belly.
-            drawOval(
-                cream,
-                topLeft=Offset(52f,91f),
-                size=androidx.compose.ui.geometry.Size(70f,48f)
-            )
-
-            // Head.
-            drawCircle(green,42f,Offset(102f,61f))
-            drawCircle(lightGreen.copy(alpha=.65f),34f,Offset(94f,52f))
-
-            // Leaf antennae.
-            fun antenna(x:Float,lean:Float) {
-                drawLine(darkGreen,Offset(x,28f),Offset(x+lean,9f),strokeWidth=4f)
-                drawOval(
-                    leaf,
-                    topLeft=Offset(x+lean-9f,0f),
-                    size=androidx.compose.ui.geometry.Size(23f,12f)
-                )
-                drawLine(leafLight,Offset(x+lean-3f,3f),Offset(x+lean+7f,7f),strokeWidth=1.5f)
-            }
-            antenna(91f,-8f)
-            antenna(119f,10f)
-
-            // Huge glossy anime eyes.
-            fun eye(x:Float) {
-                drawCircle(Color.White,11f,Offset(x,55f))
-                drawCircle(Color(0xFF5B3B24),7f,Offset(x,57f))
-                drawCircle(Color.Black,4.6f,Offset(x,58f))
-                drawCircle(Color.White,2.3f,Offset(x-2f,54f))
-            }
-            eye(91f); eye(116f)
-
-            // Blush.
-            drawCircle(Color(0xFFFF8F91).copy(alpha=.42f),5f,Offset(80f,70f))
-            drawCircle(Color(0xFFFF8F91).copy(alpha=.42f),5f,Offset(128f,70f))
-
-            // Happy mouth.
-            drawArc(scarfDark,15f,150f,false,Offset(96f,65f),style=Stroke(width=3f))
-
-            // Stage 0 = baby wrapped in a diaper, exactly the starting fantasy.
-            if(stage == 0) {
-                drawOval(Color.White.copy(alpha=.96f),Offset(59f,87f),androidx.compose.ui.geometry.Size(66f,30f))
-                drawArc(Red,0f,180f,false,Offset(61f,91f),style=Stroke(width=2f))
-                drawCircle(skin,4f,Offset(65f,109f))
-                drawCircle(skin,4f,Offset(118f,108f))
-            } else {
-                // Red scarf appears from Novice onward.
-                drawOval(scarf,Offset(58f,82f),androidx.compose.ui.geometry.Size(72f,20f))
-                drawPath(
-                    Path().apply {
-                        moveTo(112f,92f); lineTo(145f,105f); lineTo(126f,111f); close()
-                    },
-                    scarf
-                )
-                drawLine(scarfDark,Offset(61f,91f),Offset(130f,91f),strokeWidth=3f)
-
-                // Medal from Student onward.
-                if(stage >= 2) {
-                    drawCircle(scarfDark,9f,Offset(105f,105f))
-                    drawCircle(Gold,7f,Offset(105f,105f))
-                    drawLine(Ink,Offset(102f,101f),Offset(102f,109f),strokeWidth=1.6f)
-                    drawLine(Ink,Offset(99f,105f),Offset(108f,105f),strokeWidth=1.6f)
-                }
-
-                // Backpack / scroll.
-                if(stage >= 2) {
-                    drawRoundRect(
-                        brown,Offset(34f,88f),
-                        androidx.compose.ui.geometry.Size(25f,35f),
-                        cornerRadius=androidx.compose.ui.geometry.CornerRadius(6f,6f)
-                    )
-                    drawLine(Gold,Offset(38f,94f),Offset(54f,94f),strokeWidth=2f)
-                    drawLine(brown,Offset(43f,86f),Offset(39f,78f),strokeWidth=3f)
-                    drawLine(brown,Offset(51f,86f),Offset(55f,78f),strokeWidth=3f)
-                }
-
-                // Bigger accessories and leaf cape at Master/Legend.
-                if(stage >= 4) {
-                    drawOval(leaf,Offset(22f,60f),androidx.compose.ui.geometry.Size(34f,50f))
-                    drawLine(darkGreen,Offset(38f,67f),Offset(38f,99f),strokeWidth=2f)
-                    drawPath(
-                        Path().apply {
-                            moveTo(42f,82f); lineTo(25f,108f); lineTo(45f,101f); close()
-                        },
-                        leafLight
-                    )
-                }
-
-                // Legend crown-like leaf crest.
-                if(stage >= 5) {
-                    drawOval(Gold,Offset(118f,24f),androidx.compose.ui.geometry.Size(24f,8f))
-                    drawOval(Gold,Offset(128f,28f),androidx.compose.ui.geometry.Size(20f,7f))
+    val stage = when { xp >= 5000 -> 5; xp >= 2000 -> 4; xp >= 1000 -> 3; xp >= 500 -> 2; xp >= 100 -> 1; else -> 0 }
+    val bob by rememberInfiniteTransition(label="mascot").animateFloat(0f,-4f,infiniteRepeatable(tween(1200),RepeatMode.Reverse),label="bob")
+    val body=Color(0xFFA9D957); val light=Color(0xFFC7EA72); val dark=Color(0xFF5F9E3E); val cream=Color(0xFFF4E8C9)
+    Box(modifier.offset(y=bob.dp),contentAlignment=Alignment.Center){
+        Canvas(Modifier.fillMaxSize()){
+            val s=size.minDimension/160f
+            withTransform({scale(s)}){
+                val ox=(size.width/s-160f)/2f; val oy=(size.height/s-160f)/2f
+                translate(ox,oy){
+                    val n=when(stage){0->3;1->4;2->5;3->5;else->6}
+                    for(i in 0 until n){
+                        val x=28f+i*18f; val y=112f+if(i%2==0)4f else 0f
+                        drawCircle(if(i==n-1)body else light,23f+i.coerceAtMost(3)*1.2f,Offset(x,y))
+                        drawCircle(dark.copy(alpha=.28f),5f,Offset(x-9f,y+7f))
+                    }
+                    drawOval(cream,Offset(50f,91f),androidx.compose.ui.geometry.Size(72f,49f))
+                    drawCircle(body,43f,Offset(102f,61f))
+                    drawCircle(Color.White.copy(alpha=.12f),35f,Offset(94f,51f))
+                    drawLine(dark,Offset(91f,28f),Offset(83f,9f),4f); drawLine(dark,Offset(119f,28f),Offset(129f,9f),4f)
+                    drawOval(Color(0xFF4F9E2C),Offset(74f,0f),androidx.compose.ui.geometry.Size(23f,12f)); drawOval(Color(0xFF4F9E2C),Offset(120f,0f),androidx.compose.ui.geometry.Size(23f,12f))
+                    fun eye(x:Float){drawCircle(Color.White,11.5f,Offset(x,55f));drawCircle(Color(0xFF5B3B24),7.3f,Offset(x,57f));drawCircle(Color.Black,4.5f,Offset(x,58f));drawCircle(Color.White,2.5f,Offset(x-2f,54f))}
+                    eye(91f);eye(116f)
+                    drawCircle(Color(0xFFFF8F91).copy(alpha=.45f),5f,Offset(80f,70f));drawCircle(Color(0xFFFF8F91).copy(alpha=.45f),5f,Offset(128f,70f))
+                    drawArc(Color(0xFFA92225),15f,150f,false,Offset(96f,65f),style=Stroke(3f))
+                    if(stage==0){
+                        drawOval(Color.White,Offset(59f,87f),androidx.compose.ui.geometry.Size(66f,30f));drawCircle(Color(0xFFFFC7B7),4f,Offset(65f,109f));drawCircle(Color(0xFFFFC7B7),4f,Offset(118f,108f))
+                    } else {
+                        val scarf=Color(0xFFD9362F)
+                        drawOval(scarf,Offset(58f,82f),androidx.compose.ui.geometry.Size(72f,20f));drawPath(Path().apply{moveTo(112f,92f);lineTo(145f,105f);lineTo(126f,111f);close()},scarf)
+                        if(stage>=2){drawCircle(Color(0xFFA92225),9f,Offset(105f,105f));drawCircle(Gold,7f,Offset(105f,105f));drawRoundRect(Color(0xFF6A4930),Offset(34f,88f),androidx.compose.ui.geometry.Size(25f,35f),CornerRadius(6f,6f))}
+                        if(stage>=4){drawOval(Color(0xFF4F9E2C),Offset(20f,61f),androidx.compose.ui.geometry.Size(35f,52f));drawLine(dark,Offset(37f,67f),Offset(37f,101f),2f)}
+                        if(stage>=5){drawOval(Gold,Offset(118f,24f),androidx.compose.ui.geometry.Size(24f,8f));drawOval(Gold,Offset(128f,28f),androidx.compose.ui.geometry.Size(20f,7f))}
+                        drawOval(Color(0xFF6A4930),Offset(72f,128f),androidx.compose.ui.geometry.Size(14f,10f));drawOval(Color(0xFF6A4930),Offset(101f,130f),androidx.compose.ui.geometry.Size(14f,10f))
+                    }
+                    drawCircle(Color.White.copy(alpha=.20f),7f,Offset(78f,43f))
                 }
             }
-
-            // Small feet/paws.
-            if(stage >= 1) {
-                drawOval(brown,Offset(72f,128f),androidx.compose.ui.geometry.Size(14f,10f))
-                drawOval(brown,Offset(101f,130f),androidx.compose.ui.geometry.Size(14f,10f))
-            }
-
-            // Character highlight and leaf spots.
-            drawCircle(Color.White.copy(alpha=.18f),7f,Offset(78f,43f))
-            drawCircle(darkGreen.copy(alpha=.32f),4f,Offset(74f,59f))
-            drawCircle(darkGreen.copy(alpha=.25f),3f,Offset(124f,84f))
         }
     }
 }
@@ -478,43 +364,31 @@ fun JapanMap(done:Int){
 }
 
 fun androidx.compose.ui.graphics.drawscope.DrawScope.metroIsland(
-    center:Offset, width:Float, height:Float, open:Boolean, accent:Color,
-    jp:String, en:String, hero:Boolean
+    center:Offset,width:Float,height:Float,open:Boolean,accent:Color,jp:String,en:String,hero:Boolean
 ){
-    val base=if(open) accent.copy(alpha=.92f) else Color(0xFF2B323A)
-    val edge=if(open) Color.White.copy(alpha=.22f) else Color(0xFF4A525B)
-    if(open && hero){
-        drawCircle(accent.copy(alpha=.10f),maxOf(width,height)*.72f,center)
-        drawCircle(accent.copy(alpha=.12f),maxOf(width,height)*.53f,center)
-        drawCircle(accent.copy(alpha=.16f),maxOf(width,height)*.37f,center)
+    val base=if(open)accent.copy(alpha=.96f) else Color(0xFF38414A)
+    val dark=if(open)accent.copy(alpha=.55f) else Color(0xFF252C33)
+    val edge=if(open)Color.White.copy(alpha=.32f) else Color(0xFF59636D)
+    drawOval(Color.Black.copy(alpha=.30f),Offset(center.x-width*.49f,center.y-height*.30f+14f),androidx.compose.ui.geometry.Size(width*.98f,height*.62f))
+    drawOval(dark,Offset(center.x-width*.50f,center.y-height*.31f+8f),androidx.compose.ui.geometry.Size(width,height*.62f))
+    drawOval(base,Offset(center.x-width*.50f,center.y-height*.38f),androidx.compose.ui.geometry.Size(width,height*.72f))
+    drawOval(edge,Offset(center.x-width*.50f,center.y-height*.38f),androidx.compose.ui.geometry.Size(width,height*.72f),style=Stroke(3f))
+    val grass=if(open)Color(0xFF86B85A) else Color(0xFF515A62)
+    drawCircle(grass.copy(alpha=.72f),width*.20f,Offset(center.x-width*.20f,center.y-height*.08f))
+    drawCircle(grass.copy(alpha=.62f),width*.16f,Offset(center.x+width*.18f,center.y+height*.10f))
+    drawCircle(grass.copy(alpha=.55f),width*.13f,Offset(center.x+width*.02f,center.y-height*.17f))
+    val building=if(open)Color(0xFFE7D8BD) else Color(0xFF66717A); val roof=if(open)Red else Color(0xFF46505A)
+    listOf(Offset(center.x-width*.25f,center.y-height*.04f),Offset(center.x-width*.07f,center.y-height*.16f),Offset(center.x+width*.16f,center.y-height*.02f),Offset(center.x+width*.04f,center.y+height*.13f)).forEachIndexed{i,p->
+        val bw=if(hero)13f+(i%2)*4f else 9f; val bh=if(hero)22f+(i%3)*7f else 15f+(i%2)*5f
+        drawRect(building,p,androidx.compose.ui.geometry.Size(bw,bh))
+        drawPath(Path().apply{moveTo(p.x-2f,p.y);lineTo(p.x+bw/2f,p.y-7f);lineTo(p.x+bw+2f,p.y);close()},roof)
+        drawRect(Gold.copy(alpha=if(open).85f else .25f),Offset(p.x+3f,p.y+5f),androidx.compose.ui.geometry.Size(2.5f,2.5f))
     }
-    val p=Path().apply{
-        moveTo(center.x-width*.48f,center.y-height*.05f)
-        cubicTo(center.x-width*.42f,center.y-height*.48f,center.x-width*.05f,center.y-height*.55f,center.x+width*.28f,center.y-height*.40f)
-        cubicTo(center.x+width*.54f,center.y-height*.22f,center.x+width*.49f,center.y+height*.22f,center.x+width*.24f,center.y+height*.43f)
-        cubicTo(center.x-width*.05f,center.y+height*.55f,center.x-width*.40f,center.y+height*.42f,center.x-width*.48f,center.y+height*.05f)
-        close()
-    }
-    drawPath(p,base)
-    drawPath(p,edge,style=Stroke(width=3f))
-    // dense lights make each island read as a living metropolis
-    val lights=if(hero) 26 else 10
-    for(i in 0 until lights){
-        val angle=i*2.399f
-        val rx=width*.32f*(.45f+(i%4)*.15f)
-        val ry=height*.28f*(.45f+(i%3)*.16f)
-        val px=center.x+kotlin.math.cos(angle)*rx
-        val py=center.y+kotlin.math.sin(angle)*ry
-        drawCircle(if(open) Gold.copy(alpha=.82f) else Color(0xFF555D66).copy(alpha=.45f),if(hero)3.2f else 2.4f,Offset(px,py))
-    }
-    val paint=android.graphics.Paint().apply{
-        color=Color.White.toArgb(); textAlign=android.graphics.Paint.Align.CENTER; isFakeBoldText=true
-    }
-    paint.textSize=if(hero)38f else 27f
-    drawContext.canvas.nativeCanvas.drawText(jp,center.x,center.y+5f,paint)
-    paint.textSize=if(hero)15f else 11f
-    paint.color=if(open)Gold.toArgb() else Color(0xFF858B92).toArgb()
-    drawContext.canvas.nativeCanvas.drawText(if(open)en else "LOCKED",center.x,center.y+28f,paint)
+    drawLine(Color.White.copy(alpha=if(open).28f else .10f),Offset(center.x-width*.34f,center.y+height*.20f),Offset(center.x+width*.28f,center.y-height*.17f),4f)
+    if(open&&hero){drawCircle(Gold.copy(alpha=.18f),width*.44f,center);drawCircle(Gold.copy(alpha=.11f),width*.31f,center)}
+    val paint=android.graphics.Paint().apply{color=Color.White.toArgb();textAlign=android.graphics.Paint.Align.CENTER;isFakeBoldText=true;setShadowLayer(if(hero)8f else 4f,0f,3f,Color.Black.copy(alpha=.55f).toArgb())}
+    paint.textSize=if(hero)38f else 27f;drawContext.canvas.nativeCanvas.drawText(jp,center.x,center.y+7f,paint)
+    paint.textSize=if(hero)15f else 11f;paint.color=if(open)Gold.toArgb() else Color(0xFF9CA4AA).toArgb();drawContext.canvas.nativeCanvas.drawText(if(open)en else "LOCKED",center.x,center.y+30f,paint)
 }
 
 @Composable
