@@ -258,7 +258,7 @@ fun KotobaMascot(xp:Int,modifier:Modifier=Modifier) {
     Canvas(modifier) {
         val sx = size.width / 160f
         val sy = size.height / 160f
-        scale(sx, sy) {
+        androidx.compose.ui.graphics.drawscope.scale(sx, sy) {
             val cx = 80f
             val green = Color(0xFFA9D957)
             val lightGreen = Color(0xFFC7EA72)
