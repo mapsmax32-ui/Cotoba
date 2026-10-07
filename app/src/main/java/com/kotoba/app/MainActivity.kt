@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -313,8 +314,18 @@ fun JapanMap(done:Int){
         cityPin(tokyo,Red,done>=1,"東京")
         cityPin(kyoto,Color(0xFF6C7A8E),done>=8,"京都")
         cityPin(osaka,Color(0xFF7D8E62),done>=16,"大阪")
-        cityPin(hokkaido,Color(0xFFB5965A),done>=24,"北海道")
+        cityPin(hokkaido,Color(0xFF4F7EA8),done>=24,"北海道")
+        cityIcon(tokyo,0,done>=1)
+        cityIcon(kyoto,1,done>=8)
+        cityIcon(osaka,2,done>=16)
+        cityIcon(hokkaido,3,done>=24)
     }
+}
+fun androidx.compose.ui.graphics.drawscope.DrawScope.cityIcon(p:Offset,type:Int,open:Boolean){
+    val iconColor=if(open)Ink else Color(0xFF777777)
+    val paint=android.graphics.Paint().apply{color=iconColor.toArgb();textSize=38f;isFakeBoldText=true}
+    val icon=when(type){0->"⛩";1->"五";2->"城";else->"❄"}
+    drawContext.canvas.nativeCanvas.drawText(icon,p.x+22f,p.y-18f,paint)
 }
 fun androidx.compose.ui.graphics.drawscope.DrawScope.cityPin(p:Offset,color:Color,open:Boolean,label:String){
     drawCircle(if(open)color else Color(0xFF8E8E8E),14f,p)
