@@ -370,7 +370,7 @@ fun KotobaMascot(xp:Int,modifier:Modifier=Modifier) {
                     drawRoundRect(
                         brown,Offset(34f,88f),
                         androidx.compose.ui.geometry.Size(25f,35f),
-                        cornerRadius=6f
+                        cornerRadius=androidx.compose.ui.geometry.CornerRadius(6f,6f)
                     )
                     drawLine(Gold,Offset(38f,94f),Offset(54f,94f),strokeWidth=2f)
                     drawLine(brown,Offset(43f,86f),Offset(39f,78f),strokeWidth=3f)
