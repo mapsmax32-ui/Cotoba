@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -91,7 +92,7 @@ fun KotobaApp() {
         var xp by remember { mutableIntStateOf(126) }
         var done by remember { mutableIntStateOf(2) }
         var xpPop by remember { mutableStateOf(false) }
-        LaunchedEffect(xpPop) { if (xpPop) { kotlinx.coroutines.delay(1000); xpPop = false } }
+        LaunchedEffect(xpPop) { if (xpPop) { delay(1000); xpPop = false } }
 
         Scaffold(
             containerColor=Washi,
@@ -174,21 +175,30 @@ fun MentorCard(level:Int,done:Int) {
     Card(Modifier.fillMaxWidth(),RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
         Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
             Box(Modifier.size(92.dp).scale(bob).background(Brush.radialGradient(listOf(Color(0xFFFFE4DE),Color(0xFFF6F0E5))),CircleShape),contentAlignment=Alignment.Center) {
-                Canvas(Modifier.size(78.dp)) {
-                    drawCircle(Color(0xFF202020),radius=30f,center=center.copy(y=center.y+3))
-                    drawCircle(Color(0xFFFFD5C8),radius=26f,center=center.copy(y=center.y+10))
-                    drawCircle(Color.White,radius=6f,center=center.copy(x=center.x-9,y=center.y+5))
-                    drawCircle(Color.White,radius=6f,center=center.copy(x=center.x+9,y=center.y+5))
-                    drawCircle(Red,radius=2.5f,center=center.copy(x=center.x-9,y=center.y+5))
-                    drawCircle(Red,radius=2.5f,center=center.copy(x=center.x+9,y=center.y+5))
+                Canvas(Modifier.size(82.dp)) {
+                    val cy = center.y
+                    val xs = listOf(center.x-27f, center.x-10f, center.x+8f, center.x+24f)
+                    val rs = listOf(17f, 18f, 19f, 23f)
+                    xs.forEachIndexed { i, x ->
+                        drawCircle(if (i == 3) Color(0xFFFFD5C8) else Sage, rs[i], center.copy(x=x, y=cy+14f))
+                    }
+                    drawCircle(Color(0xFFB7D58A), 20f, center.copy(x=center.x+24f, y=cy-4f))
+                    drawCircle(Color.White, 5f, center.copy(x=center.x+17f, y=cy-8f))
+                    drawCircle(Ink, 2.2f, center.copy(x=center.x+17f, y=cy-8f))
+                    drawCircle(Color.White, 5f, center.copy(x=center.x+31f, y=cy-8f))
+                    drawCircle(Ink, 2.2f, center.copy(x=center.x+31f, y=cy-8f))
+                    drawLine(Sage, center.copy(x=center.x+13f,y=cy-22f), center.copy(x=center.x+5f,y=cy-34f), strokeWidth=4f)
+                    drawLine(Sage, center.copy(x=center.x+35f,y=cy-22f), center.copy(x=center.x+43f,y=cy-34f), strokeWidth=4f)
+                    drawCircle(Gold, 3.5f, center.copy(x=center.x+5f,y=cy-34f))
+                    drawCircle(Red, 3.5f, center.copy(x=center.x+43f,y=cy-34f))
                 }
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)) {
-                Text("КОТОБА",color=Gold,fontSize=11.sp,fontWeight=FontWeight.Black)
+                Text("МР. КОТОБА",color=Gold,fontSize=11.sp,fontWeight=FontWeight.Black)
                 Text("「一緒に行こう！」",fontSize=17.sp,fontWeight=FontWeight.Bold)
                 Text("Пойдём дальше вместе!",color=Indigo,fontSize=13.sp)
-                Text("Уровень "+level+" · "+done+" миссий",color=Sage,fontSize=12.sp)
+                Text("Мистер Котоба · уровень "+level+" · "+done+" миссий",color=Sage,fontSize=12.sp)
             }
         }
     }
@@ -324,8 +334,8 @@ fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack
                                 }
                             }
                         }
-                        AnimatedVisibility(visible=answered,enter=fadeIn()+expandVertically()) { Text(if(correct)"Отлично! 正解 🎉" else "Почти. Правильный ответ подсвечен.",color=if(correct)Sage else Red,fontWeight=FontWeight.Bold) }
-                        Button(onClick={if(answered)onNext else selected=lesson.answer},Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)) { Text(if(answered)if(step==3)"Забрать XP ✨" else "Дальше →" else "Проверить") }
+                        AnimatedVisibility(visible=answered,enter=fadeIn()+expandVertically()) { Text(if(correct) if(step==3) "Миссия завершена! 正解 🎉" else "Отлично! 正解 🎉" else "Почти. Правильный ответ подсвечен.",color=if(correct)Sage else Red,fontWeight=FontWeight.Bold) }
+                        Button(onClick={if(answered) onNext() else selected=lesson.answer},Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)) { Text(if(answered)if(step==3)"Завершить урок · +"+lesson.xp+" XP ✨" else "Продолжить →" else "Проверить") }
                     }
                 }
             }
