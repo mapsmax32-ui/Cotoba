@@ -15,3 +15,5 @@
 Минимальная версия Android: 8.0 (API 26).
 
 Это первая Android-версия интерфейса KOTOBA. AI пока подключается через будущий backend; демо-диалог уже есть в приложении.
+
+<!-- build trigger: functional navigation -->
