@@ -292,48 +292,60 @@ fun PathScreen(modifier:Modifier,done:Int,onLesson:(Int)->Unit){
 }
 @Composable
 fun JapanMap(done:Int){
-    Canvas(Modifier.fillMaxWidth().height(310.dp).background(Color(0xFFF0ECE1),RoundedCornerShape(24.dp))){
+    Canvas(
+        Modifier.fillMaxWidth()
+            .height(390.dp)
+            .background(Color(0xFF111923),RoundedCornerShape(28.dp))
+    ){
         val w=size.width; val h=size.height
-        val sea=Color(0xFFDCE8E8)
-        drawRect(sea)
-        val land=Color(0xFFE9E2CF)
-        val stroke=Color(0xFFB7AD98)
-        val p=Path().apply{
-            moveTo(w*.22f,h*.18f); lineTo(w*.30f,h*.11f); lineTo(w*.38f,h*.15f); lineTo(w*.47f,h*.24f)
-            lineTo(w*.55f,h*.32f); lineTo(w*.61f,h*.43f); lineTo(w*.66f,h*.57f); lineTo(w*.60f,h*.72f)
-            lineTo(w*.51f,h*.84f); lineTo(w*.40f,h*.77f); lineTo(w*.31f,h*.66f); lineTo(w*.25f,h*.51f)
-            lineTo(w*.18f,h*.36f); close()
-        }
-        drawPath(p,land,style=Fill)
-        drawPath(p,stroke,style=Stroke(width=3f))
-        val tokyo=Offset(w*.57f,h*.49f)
-        val kyoto=Offset(w*.48f,h*.57f)
-        val osaka=Offset(w*.43f,h*.62f)
-        val hokkaido=Offset(w*.43f,h*.15f)
-        drawLine(stroke,tokyo,kyoto,strokeWidth=4f)
-        drawLine(stroke,kyoto,osaka,strokeWidth=4f)
-        drawLine(stroke,kyoto,hokkaido,strokeWidth=4f)
-        cityPin(tokyo,Red,done>=1,"東京")
-        cityPin(kyoto,Color(0xFF6C7A8E),done>=8,"京都")
-        cityPin(osaka,Color(0xFF7D8E62),done>=16,"大阪")
-        cityPin(hokkaido,Color(0xFF4F7EA8),done>=24,"北海道")
-        cityIcon(tokyo,0,done>=1)
-        cityIcon(kyoto,1,done>=8)
-        cityIcon(osaka,2,done>=16)
-        cityIcon(hokkaido,3,done>=24)
+        // Four separate megacity-islands. Tokyo is deliberately dominant and glowing.
+        metroIsland(Offset(w*.55f,h*.53f),w*.33f,h*.29f,done>=1,Red,"東京","TOKYO",true)
+        metroIsland(Offset(w*.25f,h*.34f),w*.20f,h*.20f,done>=8,Color(0xFF6C7180),"京都","KYOTO",false)
+        metroIsland(Offset(w*.25f,h*.73f),w*.19f,h*.18f,done>=16,Color(0xFF667267),"大阪","OSAKA",false)
+        metroIsland(Offset(w*.72f,h*.18f),w*.22f,h*.18f,done>=24,Color(0xFF667786),"北海道","HOKKAIDO",false)
     }
 }
-fun androidx.compose.ui.graphics.drawscope.DrawScope.cityIcon(p:Offset,type:Int,open:Boolean){
-    val iconColor=if(open)Ink else Color(0xFF777777)
-    val paint=android.graphics.Paint().apply{color=iconColor.toArgb();textSize=38f;isFakeBoldText=true}
-    val icon=when(type){0->"⛩";1->"五";2->"城";else->"❄"}
-    drawContext.canvas.nativeCanvas.drawText(icon,p.x+22f,p.y-18f,paint)
+
+fun androidx.compose.ui.graphics.drawscope.DrawScope.metroIsland(
+    center:Offset, width:Float, height:Float, open:Boolean, accent:Color,
+    jp:String, en:String, hero:Boolean
+){
+    val base=if(open) accent.copy(alpha=.92f) else Color(0xFF2B323A)
+    val edge=if(open) Color.White.copy(alpha=.22f) else Color(0xFF4A525B)
+    if(open && hero){
+        drawCircle(accent.copy(alpha=.10f),maxOf(width,height)*.72f,center)
+        drawCircle(accent.copy(alpha=.12f),maxOf(width,height)*.53f,center)
+        drawCircle(accent.copy(alpha=.16f),maxOf(width,height)*.37f,center)
+    }
+    val p=Path().apply{
+        moveTo(center.x-width*.48f,center.y-height*.05f)
+        cubicTo(center.x-width*.42f,center.y-height*.48f,center.x-width*.05f,center.y-height*.55f,center.x+width*.28f,center.y-height*.40f)
+        cubicTo(center.x+width*.54f,center.y-height*.22f,center.x+width*.49f,center.y+height*.22f,center.x+width*.24f,center.y+height*.43f)
+        cubicTo(center.x-width*.05f,center.y+height*.55f,center.x-width*.40f,center.y+height*.42f,center.x-width*.48f,center.y+height*.05f)
+        close()
+    }
+    drawPath(p,base)
+    drawPath(p,edge,style=Stroke(width=3f))
+    // dense lights make each island read as a living metropolis
+    val lights=if(hero) 26 else 10
+    for(i in 0 until lights){
+        val angle=i*2.399f
+        val rx=width*.32f*(.45f+(i%4)*.15f)
+        val ry=height*.28f*(.45f+(i%3)*.16f)
+        val px=center.x+kotlin.math.cos(angle)*rx
+        val py=center.y+kotlin.math.sin(angle)*ry
+        drawCircle(if(open) Gold.copy(alpha=.82f) else Color(0xFF555D66).copy(alpha=.45f),if(hero)3.2f else 2.4f,Offset(px,py))
+    }
+    val paint=android.graphics.Paint().apply{
+        color=Color.White.toArgb(); textAlign=android.graphics.Paint.Align.CENTER; isFakeBoldText=true
+    }
+    paint.textSize=if(hero)38f else 27f
+    drawContext.canvas.nativeCanvas.drawText(jp,center.x,center.y+5f,paint)
+    paint.textSize=if(hero)15f else 11f
+    paint.color=if(open)Gold.toArgb() else Color(0xFF858B92).toArgb()
+    drawContext.canvas.nativeCanvas.drawText(if(open)en else "LOCKED",center.x,center.y+28f,paint)
 }
-fun androidx.compose.ui.graphics.drawscope.DrawScope.cityPin(p:Offset,color:Color,open:Boolean,label:String){
-    drawCircle(if(open)color else Color(0xFF8E8E8E),14f,p)
-    drawCircle(Color.White,5f,p)
-    drawContext.canvas.nativeCanvas.drawText(label,p.x-18f,p.y+31f,android.graphics.Paint().apply{this.color=Ink.toArgb();textSize=26f;isFakeBoldText=true})
-}
+
 @Composable
 fun AlphabetScreen(modifier:Modifier) {
     var katakanaMode by rememberSaveable { mutableStateOf(true) }
@@ -452,7 +464,7 @@ fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack
                     }
                     Button(onClick=onNext,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(16.dp)){Text("Я готов →")}
                 }
-                2 -> InteractiveTask(lesson,selected,order,checked,{selected=it},{order=order+it},{checked=true},{order=order.dropLast(1)})
+                2 -> InteractiveTask(lesson,selected,order,checked,{selected=it},{order=order+it},{checked=true},{order=order.dropLast(1)},onNext)
                 else -> Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
                     Text("Финальный бросок",fontSize=21.sp,fontWeight=FontWeight.Bold)
                     Text(lesson.question,color=Indigo)
@@ -477,7 +489,7 @@ fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack
 @Composable
 fun InteractiveTask(
     lesson:Lesson,selected:Int,order:List<String>,checked:Boolean,
-    onSelect:(Int)->Unit,onAdd:(String)->Unit,onCheck:()->Unit,onUndo:()->Unit
+    onSelect:(Int)->Unit,onAdd:(String)->Unit,onCheck:()->Unit,onUndo:()->Unit,onSuccess:()->Unit
 ){
     Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
         when(lesson.kind){
@@ -491,7 +503,11 @@ fun InteractiveTask(
                     }
                 }
                 Button(onClick={if(order.isNotEmpty())onUndo()},Modifier.fillMaxWidth(),enabled=order.isNotEmpty()){Text("↩ Убрать последнее")}
-                Button(onClick=onCheck,Modifier.fillMaxWidth().height(52.dp),shape=RoundedCornerShape(16.dp),enabled=order.size==3){Text(if(checked)if(order==when(lesson.title){"Токио 04 — Спасибо"->listOf("あり","が","とう");else->listOf("えきは","どこ","ですか")})"Правильно! 🎉" else "Порядок неверный" else "Проверить порядок")}
+                Button(onClick={
+                    if(orderCorrect) onSuccess() else onCheck()
+                },Modifier.fillMaxWidth().height(52.dp),shape=RoundedCornerShape(16.dp),enabled=order.size==3){
+                    Text(if(checked && orderCorrect)"Продолжить →" else if(checked)"Проверить ещё раз" else "Проверить порядок")
+                }
                 if(checked) Text(if(order==when(lesson.title){"Токио 04 — Спасибо"->listOf("あり","が","とう");else->listOf("えきは","どこ","ですか")})"Отличная сборка!" else "Попробуй снова.",color=if(order==when(lesson.title){"Токио 04 — Спасибо"->listOf("あり","が","とう");else->listOf("えきは","どこ","ですか")})Sage else Red,fontWeight=FontWeight.Bold)
             }
             else -> {
@@ -509,7 +525,7 @@ fun InteractiveTask(
                     }
                 }
                 if(selected>=0) Text(if(selected==lesson.answer)"Правильно! Теперь финальный шаг." else "Не совсем. Выбери другой вариант.",color=if(selected==lesson.answer)Sage else Red,fontWeight=FontWeight.Bold)
-                Button(onClick={if(selected==lesson.answer)onCheck()else onSelect(-1)},Modifier.fillMaxWidth().height(52.dp),shape=RoundedCornerShape(16.dp)){Text(if(selected==lesson.answer)"Продолжить →" else "Попробовать ещё")}
+                Button(onClick={if(selected==lesson.answer)onSuccess()else onSelect(-1)},Modifier.fillMaxWidth().height(52.dp),shape=RoundedCornerShape(16.dp)){Text(if(selected==lesson.answer)"Продолжить →" else "Попробовать ещё")}
             }
         }
     }
