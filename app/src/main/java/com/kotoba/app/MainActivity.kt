@@ -283,6 +283,12 @@ fun LessonScreen(modifier:Modifier,lesson:Lesson,step:Int,onNext:()->Unit,onBack
     var selected by remember(lesson,step){mutableIntStateOf(-1)}
     val answered=selected>=0
     val correct=selected==lesson.answer
+    LaunchedEffect(selected, step) {
+        if (selected >= 0 && correct) {
+            delay(700)
+            onNext()
+        }
+    }
     val pulse by rememberInfiniteTransition(label="pulse").animateFloat(0.97f,1.03f,infiniteRepeatable(tween(1200),RepeatMode.Reverse),label="pulse")
     Column(modifier.fillMaxSize().padding(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
