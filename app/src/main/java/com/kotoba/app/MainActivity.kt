@@ -3,7 +3,6 @@ package com.kotoba.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -83,9 +82,9 @@ fun Home(modifier: Modifier = Modifier) {
         }
         Text("Сегодня", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            StatCard("12", "слов")
-            StatCard("8", "минут")
-            StatCard("7", "дней")
+            StatCard("12", "слов", Modifier.weight(1f))
+            StatCard("8", "минут", Modifier.weight(1f))
+            StatCard("7", "дней", Modifier.weight(1f))
         }
         Button(onClick = {}, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
             Text("Продолжить урок")
@@ -94,8 +93,8 @@ fun Home(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun StatCard(value: String, label: String) {
-    Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+fun StatCard(value: String, label: String, modifier: Modifier = Modifier) {
+    Card(modifier = modifier, shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
         Column(Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(value, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Text(label, fontSize = 12.sp, color = Indigo)
