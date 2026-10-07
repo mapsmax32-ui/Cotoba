@@ -290,7 +290,7 @@ fun AlphabetScreen(modifier:Modifier) {
                 Row(Modifier.fillMaxWidth().padding(18.dp),verticalAlignment=Alignment.CenterVertically) {
                     Text(if(katakanaMode)"カ" else "あ",fontSize=52.sp,color=Color.White,fontWeight=FontWeight.Black)
                     Spacer(Modifier.width(14.dp))
-                    Column { Text(if(katakanaMode)"Катакана":"Хирагана",color=Gold,fontSize=13.sp,fontWeight=FontWeight.Bold); Text("Освоено "+learned+" / "+kana.size,color=Color.White,fontSize=19.sp,fontWeight=FontWeight.Bold); Text("Нажимай на символ, чтобы отметить его.",color=Color.White.copy(alpha=.72f),fontSize=11.sp) }
+                    Column { Text(if(katakanaMode)"Катакана" else "Хирагана",color=Gold,fontSize=13.sp,fontWeight=FontWeight.Bold); Text("Освоено "+learned+" / "+kana.size,color=Color.White,fontSize=19.sp,fontWeight=FontWeight.Bold); Text("Нажимай на символ, чтобы отметить его.",color=Color.White.copy(alpha=.72f),fontSize=11.sp) }
                 }
             }
         }
