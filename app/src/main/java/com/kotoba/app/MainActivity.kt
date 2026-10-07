@@ -661,6 +661,12 @@ fun InteractiveTask(
     lesson:Lesson,selected:Int,order:List<String>,checked:Boolean,
     onSelect:(Int)->Unit,onAdd:(String)->Unit,onCheck:()->Unit,onUndo:()->Unit,onSuccess:()->Unit
 ){
+    val orderTarget = when(lesson.title){
+        "Токио 04 — Спасибо" -> listOf("あり","が","とう")
+        "Токио 19 — Где станция?" -> listOf("えきは","どこ","ですか")
+        else -> lesson.choices
+    }
+    val orderCorrect = order == orderTarget
     Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
         when(lesson.kind){
             LessonKind.ORDER -> {
