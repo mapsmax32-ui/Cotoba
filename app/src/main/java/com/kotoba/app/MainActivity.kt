@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -258,7 +259,7 @@ fun KotobaMascot(xp:Int,modifier:Modifier=Modifier) {
     Canvas(modifier) {
         val sx = size.width / 160f
         val sy = size.height / 160f
-        androidx.compose.ui.graphics.drawscope.scale(sx, sy) {
+        withTransform({ scale(sx, sy) }) {
             val cx = 80f
             val green = Color(0xFFA9D957)
             val lightGreen = Color(0xFFC7EA72)
