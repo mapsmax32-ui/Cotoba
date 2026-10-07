@@ -74,7 +74,11 @@ Lesson("Частица は","わたしは がくせいです","watashi wa gakuse
 Lesson("です・ます","です・ます","desu · masu","вежливые формы","Вежливая речь N5",50,"Какая форма вежливая?",listOf("だ・る","です・ます","だった・た","ない・ん"),1),
 Lesson("Мини-диалог","すみません。えきは どこですか。","sumimasen. eki wa doko desu ka","Извините. Где станция?","Собираем всё вместе",55,"Как спросить, где станция?",listOf("えきは どこですか","えきは なんですか","みずを ください","おいしいです"),0),
 Lesson("N5 Boss","わたしは にほんごを べんきょうします","watashi wa nihongo o benkyou shimasu","я учу японский","Финальная проверка N5",100,"Что значит にほんごを べんきょうします?",listOf("Я люблю Японию","Я учу японский","Я говорю по-английски","Я иду на станцию"),1)
-)
+).distinctBy { it.jp }
+
+data class Kana(val symbol:String,val romaji:String)
+private val hiragana=listOf(Kana("あ","a"),Kana("い","i"),Kana("う","u"),Kana("え","e"),Kana("お","o"),Kana("か","ka"),Kana("き","ki"),Kana("く","ku"),Kana("け","ke"),Kana("こ","ko"),Kana("さ","sa"),Kana("し","shi"),Kana("す","su"),Kana("せ","se"),Kana("そ","so"),Kana("た","ta"),Kana("ち","chi"),Kana("つ","tsu"),Kana("て","te"),Kana("と","to"),Kana("な","na"),Kana("に","ni"),Kana("ぬ","nu"),Kana("ね","ne"),Kana("の","no"),Kana("は","ha"),Kana("ひ","hi"),Kana("ふ","fu"),Kana("へ","he"),Kana("ほ","ho"),Kana("ま","ma"),Kana("み","mi"),Kana("む","mu"),Kana("め","me"),Kana("も","mo"),Kana("や","ya"),Kana("ゆ","yu"),Kana("よ","yo"),Kana("ら","ra"),Kana("り","ri"),Kana("る","ru"),Kana("れ","re"),Kana("ろ","ro"),Kana("わ","wa"),Kana("を","wo"),Kana("ん","n"))
+private val katakana=listOf(Kana("ア","a"),Kana("イ","i"),Kana("ウ","u"),Kana("エ","e"),Kana("オ","o"),Kana("カ","ka"),Kana("キ","ki"),Kana("ク","ku"),Kana("ケ","ke"),Kana("コ","ko"),Kana("サ","sa"),Kana("シ","shi"),Kana("ス","su"),Kana("セ","se"),Kana("ソ","so"),Kana("タ","ta"),Kana("チ","chi"),Kana("ツ","tsu"),Kana("テ","te"),Kana("ト","to"),Kana("ナ","na"),Kana("ニ","ni"),Kana("ヌ","nu"),Kana("ネ","ne"),Kana("ノ","no"),Kana("ハ","ha"),Kana("ヒ","hi"),Kana("フ","fu"),Kana("ヘ","he"),Kana("ホ","ho"),Kana("マ","ma"),Kana("ミ","mi"),Kana("ム","mu"),Kana("メ","me"),Kana("モ","mo"),Kana("ヤ","ya"),Kana("ユ","yu"),Kana("ヨ","yo"),Kana("ラ","ra"),Kana("リ","ri"),Kana("ル","ru"),Kana("レ","re"),Kana("ロ","ro"),Kana("ワ","wa"),Kana("ヲ","wo"),Kana("ン","n"))
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,8 +102,8 @@ fun KotobaApp() {
             containerColor=Washi,
             bottomBar={
                 if (lesson < 0) NavigationBar(containerColor=Color.White) {
-                    val names=listOf("Главная","Путь","Слова","Повтор","Профиль")
-                    val icons=listOf(Icons.Rounded.Home,Icons.Rounded.Map,Icons.Rounded.MenuBook,Icons.Rounded.LocalFireDepartment,Icons.Rounded.EmojiEvents)
+                    val names=listOf("Главная","Путь","Алфавит","Слова","Повтор","Профиль")
+                    val icons=listOf(Icons.Rounded.Home,Icons.Rounded.Map,Icons.Rounded.TextFields,Icons.Rounded.MenuBook,Icons.Rounded.LocalFireDepartment,Icons.Rounded.EmojiEvents)
                     names.forEachIndexed { i,n ->
                         NavigationBarItem(selected=tab==i,onClick={tab=i},icon={Icon(icons[i],null)},label={Text(n,fontSize=11.sp)})
                     }
@@ -123,8 +127,9 @@ fun KotobaApp() {
             } else when(tab) {
                 0 -> Home(Modifier.padding(pad),xp,done,{lesson=done.coerceAtMost(lessons.lastIndex);step=0},{tab=1})
                 1 -> PathScreen(Modifier.padding(pad),done,{i->lesson=i;step=0})
-                2 -> WordsScreen(Modifier.padding(pad),{lesson=0;step=0})
-                3 -> ReviewScreen(Modifier.padding(pad),{lesson=1;step=0})
+                2 -> AlphabetScreen(Modifier.padding(pad))
+                3 -> WordsScreen(Modifier.padding(pad),{lesson=done.coerceAtMost(lessons.lastIndex);step=0})
+                4 -> ReviewScreen(Modifier.padding(pad),{lesson=done.coerceAtMost(lessons.lastIndex);step=0})
                 else -> ProfileScreen(Modifier.padding(pad),xp,done)
             }
         }
@@ -134,6 +139,8 @@ fun KotobaApp() {
 @Composable
 fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
     val level=xp/100+1
+    val nextIndex=done.coerceAtMost(lessons.lastIndex)
+    val nextLesson=lessons[nextIndex]
     val progress=(xp%100)/100f
     val anim by animateFloatAsState(progress,tween(900),label="xp")
     LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(15.dp)) {
@@ -141,7 +148,7 @@ fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
             Column { Text("おかえりなさい",fontSize=28.sp,fontWeight=FontWeight.Bold); Text("Твой путь начинается здесь",color=Indigo) }
             Box(Modifier.size(54.dp).background(Red,CircleShape),contentAlignment=Alignment.Center){Text("N5",color=Color.White,fontWeight=FontWeight.Black)}
         }}
-        item { MentorCard(level,done) }
+        item { MentorCard(level,done,xp) }
         item { Card(Modifier.fillMaxWidth(),RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Indigo)) {
             Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(13.dp)) {
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
@@ -157,7 +164,7 @@ fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
             Column(Modifier.padding(20.dp),verticalArrangement=Arrangement.spacedBy(13.dp)) {
                 Row(verticalAlignment=Alignment.CenterVertically) {
                     Box(Modifier.size(46.dp).background(Color(0xFFFFE5DF),CircleShape),contentAlignment=Alignment.Center){Text("日",color=Red,fontSize=24.sp)}
-                    Spacer(Modifier.width(12.dp)); Column { Text("Следующая миссия",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text("Приветствия",fontSize=20.sp,fontWeight=FontWeight.Bold) }
+                    Spacer(Modifier.width(12.dp)); Column { Text("Следующая миссия",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Bold); Text(nextLesson.title,fontSize=20.sp,fontWeight=FontWeight.Bold) }
                 }
                 Text("4 этапа · японский + ромадзи + мини-квиз",color=Indigo)
                 Button(onClick=onStart,Modifier.fillMaxWidth(),shape=RoundedCornerShape(15.dp)){Icon(Icons.Rounded.PlayArrow,null);Spacer(Modifier.width(6.dp));Text("Начать миссию")}
@@ -170,37 +177,51 @@ fun Home(modifier:Modifier,xp:Int,done:Int,onStart:()->Unit,onPath:()->Unit) {
     }
 }
 @Composable
-fun MentorCard(level:Int,done:Int) {
-    val bob by rememberInfiniteTransition(label="mentor").animateFloat(.97f,1.03f,infiniteRepeatable(tween(1600),RepeatMode.Reverse),label="bob")
-    Card(Modifier.fillMaxWidth(),RoundedCornerShape(28.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
-        Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
-            Box(Modifier.size(92.dp).scale(bob).background(Brush.radialGradient(listOf(Color(0xFFFFE4DE),Color(0xFFF6F0E5))),CircleShape),contentAlignment=Alignment.Center) {
-                Canvas(Modifier.size(82.dp)) {
-                    val cy = center.y
-                    val xs = listOf(center.x-27f, center.x-10f, center.x+8f, center.x+24f)
-                    val rs = listOf(17f, 18f, 19f, 23f)
-                    xs.forEachIndexed { i, x ->
-                        drawCircle(if (i == 3) Color(0xFFFFD5C8) else Sage, rs[i], center.copy(x=x, y=cy+14f))
-                    }
-                    drawCircle(Color(0xFFB7D58A), 20f, center.copy(x=center.x+24f, y=cy-4f))
-                    drawCircle(Color.White, 5f, center.copy(x=center.x+17f, y=cy-8f))
-                    drawCircle(Ink, 2.2f, center.copy(x=center.x+17f, y=cy-8f))
-                    drawCircle(Color.White, 5f, center.copy(x=center.x+31f, y=cy-8f))
-                    drawCircle(Ink, 2.2f, center.copy(x=center.x+31f, y=cy-8f))
-                    drawLine(Sage, center.copy(x=center.x+13f,y=cy-22f), center.copy(x=center.x+5f,y=cy-34f), strokeWidth=4f)
-                    drawLine(Sage, center.copy(x=center.x+35f,y=cy-22f), center.copy(x=center.x+43f,y=cy-34f), strokeWidth=4f)
-                    drawCircle(Gold, 3.5f, center.copy(x=center.x+5f,y=cy-34f))
-                    drawCircle(Red, 3.5f, center.copy(x=center.x+43f,y=cy-34f))
+fun MentorCard(level:Int,done:Int,xp:Int) {
+    val bob by rememberInfiniteTransition(label="mentor").animateFloat(.96f,1.04f,infiniteRepeatable(tween(1400),RepeatMode.Reverse),label="bob")
+    val stage=when(level){1->"Гусёнок";2,3->"Юный Котоба";4,5->"Котоба-ниндзя";else->"Мастер Котоба"}
+    Card(Modifier.fillMaxWidth(),RoundedCornerShape(30.dp),colors=CardDefaults.cardColors(containerColor=Color.White)) {
+        Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment=Alignment.CenterVertically) {
+                Box(Modifier.size(142.dp).scale(bob).background(Brush.radialGradient(listOf(Color(0xFFFFF2D6),Color(0xFFE8E1D3))),CircleShape),contentAlignment=Alignment.Center) { KotobaMascot(level,Modifier.size(132.dp)) }
+                Spacer(Modifier.width(15.dp))
+                Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)) {
+                    Text("МР. КОТОБА",color=Gold,fontSize=12.sp,fontWeight=FontWeight.Black)
+                    Text(stage,fontSize=21.sp,fontWeight=FontWeight.ExtraBold)
+                    Text("「一緒に行こう！」",fontSize=16.sp,fontWeight=FontWeight.Bold)
+                    Text("Мистер Котоба растёт вместе с тобой.",color=Indigo,fontSize=12.sp)
+                    Text("Уровень "+level+" · "+done+" миссий",color=Sage,fontSize=12.sp)
                 }
             }
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)) {
-                Text("МР. КОТОБА",color=Gold,fontSize=11.sp,fontWeight=FontWeight.Black)
-                Text("「一緒に行こう！」",fontSize=17.sp,fontWeight=FontWeight.Bold)
-                Text("Пойдём дальше вместе!",color=Indigo,fontSize=13.sp)
-                Text("Мистер Котоба · уровень "+level+" · "+done+" миссий",color=Sage,fontSize=12.sp)
-            }
+            if(level<6) {
+                LinearProgressIndicator(progress={((xp%200)/200f)},Modifier.fillMaxWidth().height(7.dp),color=Gold,trackColor=Mist)
+                Text("До следующей формы: "+((level+1)*100-xp)+" XP",color=Indigo,fontSize=11.sp)
+            } else Text("Форма мастера открыта · дальше будут новые аксессуары.",color=Sage,fontSize=11.sp)
         }
+    }
+}
+
+@Composable
+fun KotobaMascot(level:Int,modifier:Modifier=Modifier) {
+    Canvas(modifier) {
+        val c=center
+        val body=when { level>=6->Color(0xFF8E6CCB); level>=4->Color(0xFF5E8F72); level>=2->Color(0xFF79A96B); else->Color(0xFF9BCB72) }
+        val face=if(level>=6) Color(0xFFFFD76B) else Color(0xFFFFD5C8)
+        val segments=when { level>=6->5; level>=4->4; level>=2->3; else->2 }
+        for(i in 0 until segments) drawCircle(body,34f-i*1.5f,c.copy(x=c.x-32f+i*18f,y=c.y+25f))
+        drawCircle(face,38f,c.copy(x=c.x+28f,y=c.y-5f))
+        drawCircle(Color.White,8f,c.copy(x=c.x+15f,y=c.y-10f)); drawCircle(Color.White,8f,c.copy(x=c.x+42f,y=c.y-10f))
+        drawCircle(Ink,3f,c.copy(x=c.x+17f,y=c.y-10f)); drawCircle(Ink,3f,c.copy(x=c.x+40f,y=c.y-10f))
+        drawArc(Red,0f,180f,false,c.copy(x=c.x+14f,y=c.y+5f),style=Stroke(width=4f))
+        drawLine(Sage,c.copy(x=c.x+9f,y=c.y-34f),c.copy(x=c.x,y=c.y-49f),strokeWidth=4f)
+        drawLine(Sage,c.copy(x=c.x+45f,y=c.y-34f),c.copy(x=c.x+54f,y=c.y-49f),strokeWidth=4f)
+        drawCircle(Gold,4f,c.copy(x=c.x,y=c.y-49f)); drawCircle(Red,4f,c.copy(x=c.x+54f,y=c.y-49f))
+        if(level>=4) {
+            drawCircle(Color.Transparent,42f,c.copy(x=c.x+28f,y=c.y-5f),style=Stroke(width=3f))
+            drawLine(Gold,c.copy(x=c.x-8f,y=c.y+18f),c.copy(x=c.x-40f,y=c.y+4f),strokeWidth=8f)
+            drawLine(Gold,c.copy(x=c.x-40f,y=c.y+4f),c.copy(x=c.x-22f,y=c.y-10f),strokeWidth=8f)
+        }
+        if(level>=6) { drawLine(Red,c.copy(x=c.x+14f,y=c.y+14f),c.copy(x=c.x+42f,y=c.y+14f),strokeWidth=4f) }
     }
 }
 @Composable
@@ -246,6 +267,44 @@ fun PathScreen(modifier:Modifier,done:Int,onLesson:(Int)->Unit){
 }
 @Composable
 fun MapDot(name:String,open:Boolean){Column(horizontalAlignment=Alignment.CenterHorizontally){Box(Modifier.size(34.dp).background(if(open)Red else Color.Gray,CircleShape),contentAlignment=Alignment.Center){Text("•",color=Color.White,fontSize=24.sp)};Text(name,fontSize=10.sp,fontWeight=FontWeight.Bold)}}
+
+@Composable
+fun AlphabetScreen(modifier:Modifier) {
+    var katakanaMode by rememberSaveable { mutableStateOf(true) }
+    var learned by rememberSaveable { mutableIntStateOf(0) }
+    val kana=if(katakanaMode) katakana else hiragana
+    LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(18.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+        item {
+            Text("Алфавит",fontSize=30.sp,fontWeight=FontWeight.Black)
+            Text("かな · отдельный тренажёр Хираганы и Катаканы",color=Indigo)
+            Row(Modifier.fillMaxWidth().background(Color.White,RoundedCornerShape(16.dp)).padding(4.dp)) {
+                listOf(false to "あ Хирагана",true to "カ Катакана").forEach { (isKat,label) ->
+                    Button(onClick={katakanaMode=isKat},modifier=Modifier.weight(1f),colors=ButtonDefaults.buttonColors(containerColor=if(katakanaMode==isKat) Red else Color.Transparent,contentColor=if(katakanaMode==isKat) Color.White else Ink),shape=RoundedCornerShape(12.dp)){Text(label,fontSize=12.sp)}
+                }
+            }
+        }
+        item {
+            Card(shape=RoundedCornerShape(24.dp),colors=CardDefaults.cardColors(containerColor=Indigo)) {
+                Row(Modifier.fillMaxWidth().padding(18.dp),verticalAlignment=Alignment.CenterVertically) {
+                    Text(if(katakanaMode)"カ" else "あ",fontSize=52.sp,color=Color.White,fontWeight=FontWeight.Black)
+                    Spacer(Modifier.width(14.dp))
+                    Column { Text(if(katakanaMode)"Катакана":"Хирагана",color=Gold,fontSize=13.sp,fontWeight=FontWeight.Bold); Text("Освоено "+learned+" / "+kana.size,color=Color.White,fontSize=19.sp,fontWeight=FontWeight.Bold); Text("Нажимай на символ, чтобы отметить его.",color=Color.White.copy(alpha=.72f),fontSize=11.sp) }
+                }
+            }
+        }
+        itemsIndexed(kana.chunked(5)) { _,row ->
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                row.forEach { k ->
+                    var isLearned by rememberSaveable(k.symbol,katakanaMode) { mutableStateOf(false) }
+                    Card(onClick={if(!isLearned){isLearned=true;learned++}},modifier=Modifier.weight(1f),shape=RoundedCornerShape(18.dp),colors=CardDefaults.cardColors(containerColor=if(isLearned)Color(0xFFE3EEDC) else Color.White)) {
+                        Column(Modifier.fillMaxWidth().padding(vertical=13.dp),horizontalAlignment=Alignment.CenterHorizontally) { Text(k.symbol,fontSize=28.sp,fontWeight=FontWeight.Black,color=Red); Text(k.romaji,fontSize=11.sp,color=Indigo); if(isLearned) Icon(Icons.Rounded.CheckCircle,null,tint=Sage,modifier=Modifier.size(16.dp)) }
+                    }
+                }
+                repeat(5-row.size){Spacer(Modifier.weight(1f))}
+            }
+        }
+    }
+}
 
 @Composable
 fun WordsScreen(modifier:Modifier,onStart:()->Unit){
